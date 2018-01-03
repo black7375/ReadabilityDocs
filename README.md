@@ -1,4 +1,4 @@
-#Readablility Docs
+# Readablility Docs
 
 웹상에 공개되어 있지만, 가독성이 안좋은 문서들을 가독성이 좋고 일정한 방식인 마크다운 문법으로 옮기는 프로젝트입니다.
 
