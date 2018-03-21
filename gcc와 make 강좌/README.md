@@ -1,5 +1,36 @@
 This Doc referenced by [https://wiki.kldp.org/KoreanDoc/html/gcc_and_make/gcc_and_make.html](https://wiki.kldp.org/KoreanDoc/html/gcc_and_make/gcc_and_make.html)
 
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+**Table of Contents**
+
+- [gcc와 make 강좌](#gcc와-make-강좌)
+    - [License 공지.](#license-공지)
+    - [1. 시작하면서](#1-시작하면서)
+        - [1.1 C 와 gcc 와의 관계](#11-c-와-gcc-와의-관계)
+        - [1.2 gcc 에 대한 이야기 하나](#12-gcc-에-대한-이야기-하나)
+    - [2. gcc 강좌](#2-gcc-강좌)
+        - [2.1 gcc 에 대한 기본 이해](#21-gcc-에-대한-기본-이해)
+        - [2.2 gcc 사용하기](#22-gcc-사용하기)
+            - [-o 옵션](#-o-옵션)
+            - [-c 옵션](#-c-옵션)
+            - [-I 옵션](#-i-옵션)
+            - [-l 옵션과 -L 옵션](#-l-옵션과--l-옵션)
+            - [-l 옵션](#-l-옵션)
+            - [-L 옵션](#-l-옵션)
+    - [3. make 강좌](#3-make-강좌)
+        - [3.1 머릿말](#31-머릿말)
+        - [3.2 make 시작해 봅시다.](#32-make-시작해-봅시다)
+            - [상황 1)](#상황-1)
+            - [상황 2)](#상황-2)
+            - [상황 3)](#상황-3)
+        - [3.3 꼬리말 규칙, 패턴 규칙](#33-꼬리말-규칙-패턴-규칙)
+    - [3.4 GNU make 확장 기능](#34-gnu-make-확장-기능)
+        - [3.5 매크로(Macro) 기능](#35-매크로macro-기능)
+        - [3.6 마지막 주의 사항](#36-마지막-주의-사항)
+        - [3.7 잠시 마치면서](#37-잠시-마치면서)
+
+<!-- markdown-toc end -->
+
 # gcc와 make 강좌
 
 지은이 : 이만용(geoman), 옮긴이 : 조한석(junye)
@@ -12,7 +43,9 @@ v1.0, 1997년 6월 11일 수요일
 **참고문헌**
 Running LINUX(Matt Welsh, Lar Kaufman), "오렐리 출판사"
 
-[toc]
+## License 공지.
+[KLDP Wiki License](https://wiki.kldp.org/wiki.php/KLDPWiki%B9%AE%BC%AD%C0%C7%C0%FA%C0%DB%B1%C7)에 의해 GFDL(GNU Free Documentation License)를 따릅니다.
+
 
 ## 1. 시작하면서
 ### 1.1 C 와 gcc 와의 관계
@@ -26,7 +59,7 @@ C 언어! 이는 유닉스와 심지어 마이크로소프트 제품에 이르�
 
 지금 리눅스에서 여러분은 C 언어의 ``정통 소림권법``을 익히실 수 있습니다. 기초가 없이 비법만 전수받아 보았자 다른 곳에 가면 수많은 비법을 지닌 무림고수들에게 여지없이 깨지기 마련입니다. 하지만 아무리 괴로와도 처음에 물 길어오는 것, 마당 쓰는 일부터 시작하면 철통같은 신체를 단련하기 때문에 온갖 꽁수 비법으로는 여러분을 헤칠 수 없습니다. 또한 정통 권법을 연마한 사람은 기본기가 갖춰져 있으므로 대련 중에도 상대의 비법을 금방 간파하고 심지어 상대의 비법만마저 자신의 것으로 하기도 합니다. ^^
 
-###1.2 gcc 에 대한 이야기 하나
+### 1.2 gcc 에 대한 이야기 하나
 gcc 는 GNU 프로젝트에 의해 만들어진 작품의 하나로서 그 명성은 하늘을 찌를 듯합니다. GNU 프로젝트응의 산물 중 가장 멋진 것을 꼽으라면 저는 주저하지 않고 C 컴파일러의 최고봉인 gcc 를 지목할 것입니다.
 
 실제로 gcc 의 명성은 뛰어나며 수많은 상용 회사도 스폰서를 해주고 있다는 것을 아시는지요? 예를 들어 넥스트사( 지금은 사라짐 )의 새로운 C 언어인 ``오브젝티브 C``는 gcc 를 가져다 만든 것이며 FSF 측에 다시 기증 되었습니다.
