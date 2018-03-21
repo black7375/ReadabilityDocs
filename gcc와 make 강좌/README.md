@@ -1,10 +1,13 @@
 This Doc referenced by [https://wiki.kldp.org/KoreanDoc/html/gcc_and_make/gcc_and_make.html](https://wiki.kldp.org/KoreanDoc/html/gcc_and_make/gcc_and_make.html)
 
+* License 공지. *
+[KLDP Wiki License](https://wiki.kldp.org/wiki.php/KLDPWiki%B9%AE%BC%AD%C0%C7%C0%FA%C0%DB%B1%C7)에 의해 GFDL(GNU Free Documentation License)를 따릅니다.
+
+
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
 
 - [gcc와 make 강좌](#gcc와-make-강좌)
-    - [License 공지.](#license-공지)
     - [1. 시작하면서](#1-시작하면서)
         - [1.1 C 와 gcc 와의 관계](#11-c-와-gcc-와의-관계)
         - [1.2 gcc 에 대한 이야기 하나](#12-gcc-에-대한-이야기-하나)
@@ -24,7 +27,7 @@ This Doc referenced by [https://wiki.kldp.org/KoreanDoc/html/gcc_and_make/gcc_an
             - [상황 2)](#상황-2)
             - [상황 3)](#상황-3)
         - [3.3 꼬리말 규칙, 패턴 규칙](#33-꼬리말-규칙-패턴-규칙)
-    - [3.4 GNU make 확장 기능](#34-gnu-make-확장-기능)
+        - [3.4 GNU make 확장 기능](#34-gnu-make-확장-기능)
         - [3.5 매크로(Macro) 기능](#35-매크로macro-기능)
         - [3.6 마지막 주의 사항](#36-마지막-주의-사항)
         - [3.7 잠시 마치면서](#37-잠시-마치면서)
@@ -42,9 +45,6 @@ v1.0, 1997년 6월 11일 수요일
 
 **참고문헌**
 Running LINUX(Matt Welsh, Lar Kaufman), "오렐리 출판사"
-
-## License 공지.
-[KLDP Wiki License](https://wiki.kldp.org/wiki.php/KLDPWiki%B9%AE%BC%AD%C0%C7%C0%FA%C0%DB%B1%C7)에 의해 GFDL(GNU Free Documentation License)를 따릅니다.
 
 
 ## 1. 시작하면서
@@ -742,7 +742,7 @@ make all 이건 아주 일반적인 관례이지요. 그리고 외우기도 쉽�
 
 가 수행되며 gcc 에 -c 옵션이 붙었으므로 foo.o 화일이 만들어질 것입니다.
 
-## 3.4 GNU make 확장 기능
+### 3.4 GNU make 확장 기능
 
 .c.o 라는 전통적인 표현 말고 GNU 버전( 우리가 리눅스에서 사용하는 것은 바로 이것입니다 )의 make 에서 사용하는 방법을 알아봅시다.
 
