@@ -12,9 +12,11 @@
 It is a project that is open to the public on the web, but is moved to mark-down or Org-mode grammar, which is poorly readable and has a certain readability.
 
 We plan to write as much as possible to avoid breaking the layout of the original document.
-히
+
 Document-specific licenses are grouped for each project.
 
 ## 구조.
+
 gcc와 make 강좌: gcc와 make 사용법을 포괄적이고 간략하게 설명해놓았습니다.
+
 Presudo Code: 슈도코드를 어떻게 작성하느냐에 대해 간략 다루어놓았습니다.
