@@ -1,0 +1,342 @@
+#+TITLE: «Pseudocode»
+
+* Fortran style pseudo code
+#+begin_src pascal
+program fizzbuzz
+  Do i = 1 to 100
+    set print_number to true
+    If i is divisible by 3
+      print "Fizz"
+      set print_number to false
+    If i is divisible by 5
+      print "Buzz"
+      set print_number to false
+    If print_number, print i
+    print a newline
+  end do
+#+end_src
+
+* C style pseudo code
+#+begin_src C
+ void function fizzbuzz {
+  for (i = 1; i <= 100; i++) {
+    set print_number to true;
+    If i is divisible by 3 {
+      print "Fizz";
+      set print_number to false; }
+    If i is divisible by 5 {
+      print "Buzz";
+      set print_number to false; }
+    If print_number, print i;
+    print a newline;
+  }
+}
+#+end_src
+
+* Structured Basic style pseudo code
+#+begin_src basic
+Sub fizzbuzz()
+  For i = 1 to 100
+    print_number = True
+    If i is divisible by 3 Then
+      Print "Fizz"
+      print_number = False
+    End If
+    If i is divisible by 5 Then
+      Print "Buzz"
+      print_number = False
+    End If
+    If print_number = True Then print i
+    Print a newline
+  Next i
+End Sub
+#+end_src
+
+* Common mathematical symbols
+#+begin_latex
+Return \sum_{k \in s }x_k
+#+end_latex
+
+Normally non-ASCII typesetting is used for the mathematical equations, for example by means of markup languages, such as TeX or MathML, or proprietary formula editors.
+
+Mathematical style pseudocode is sometimes referred to as pidgin code, for example pidgin ALGOL (the origin of the concept), pidgin Fortran, pidgin BASIC, pidgin Pascal, pidgin C, and pidgin Lisp.
+
+| Type of operation | Symbol              | Example              |
+|-------------------+---------------------+----------------------|
+| Assignment        | ← or :=            | c ← 2πr, c := 2πr |
+| Comparison        | =, ≠, <, >, ≤, ≥ |                      |
+| Arithmetic        | +, −, ×, /, mod    |                      |
+| Floor/ceiling     | ⌊, ⌋, ⌈, ⌉          | a ← ⌊b⌋ + ⌈c⌉       |
+| Logical           | and, or             |                      |
+| Sums, Products    | ∑ ∏               | h ← ∑a∈A 1/a      |
+
+algorithm ford-fulkerson is
+    input: Graph G with flow capacity c,
+           source node s,
+           sink node t
+    output: Flow f such that f is maximal from s to t
+
+    (Note that f(u,v) is the flow from node u to node v, and c(u,v) is the flow capacity from node u to node v)
+
+    for each edge (u, v) in GE do
+        f(u, v) ← 0
+        f(v, u) ← 0
+
+    while there exists a path p from s to t in the residual network Gf do
+        let cf be the flow capacity of the residual network Gf
+        cf(p) ← min{cf(u, v) | (u, v) in p}
+        for each edge (u, v) in p do
+            f(u, v) ←  f(u, v) + cf(p)
+            f(v, u) ← −f(u, v)
+
+    return f
+
+* Pseudocode Standard
+https://users.csc.calpoly.edu/~jdalbey/SWE/pdl_std.html
+
+** Struct
+- Constructs
+  Show constructs
+  + Example && How to use.
+
+** Basic Constructs
+| Constructs   | Mean        |
+|--------------+-------------|
+| SEQUENCE     | 선형진행    |
+| WHILE        | 반복        |
+| IF-THEN-ELSE | 두개중 선택 |
+
+*** SEQUENCE
+- SEQUENCE
+    do1
+    do2
+    do3...
+
+Ex)1
+- SEQUENCE
+    Brush teeth
+    Wash face
+    Comb hair
+    Smile in mirror
+
+Ex)2
+- SEQUENCE
+    READ height of rectangle
+    READ width of rectangle
+    COMPUTE area as height times width
+
+- Common Action Keywords
+  | Indicate  | Keywords                      |
+  |-----------+-------------------------------|
+  | Input     | READ, OBTAIN, GET             |
+  | Output    | PRINT, DISPLAY, SHOW          |
+  | Compute   | COMPUTE, CALCULATE, DETERMINE |
+  | Intialize | SET, INIT                     |
+  | Add one   | INCREMENT, BUMP               |
+
+
+*** IF-THEN-ELSE
+- IF condition THEN
+    sequence1
+  ELSE
+    sequence2
+  ENDIF
+(ELSE, sequence2 are optional)
+
+Ex)1
+- IF HoursWorked > NormalMax THEN
+    Display overtime message
+  ELSE
+    Display regular time message
+  ENDIF
+
+*** WHILE
+- WHILE condition
+    sequence
+  ENDWHILE
+
+Ex)1
+- WHILE Population < Limit
+    Compute Population as Population + Births - Deaths
+  ENDWHILE
+
+Ex)2
+- WHILE employee.type NOT EQUAL manager AND personCount < numEmployees
+    INCREMENT personCount
+    CALL employeeList.getPerson with personCount RETURNING employee
+ENDWHILE
+
+** Useful Constructs
+| Constructs   | Mean                      |
+|--------------+---------------------------|
+| REPEAT-UNTIL | 밑에 간단한 조건부 테스트 |
+| CASE         | 분기 결정                 |
+| FOR          | 카운팅 루프               |
+
+*** REPEAT-UNTIL
+- REPEAT
+    sequence
+  UNTIL condition
+
+*** CASE
+- CASE expression OF
+    condition1: sequence1
+    condition2: sequence2
+    ...
+    conditionN: sequenceN
+    OTHERS:
+    default_sequence
+  ENDCASE
+
+Ex1)
+- CASE Title OF
+    Mr  : Print "Mister"
+    Mrs : Print "Missus"
+    Miss: Print "Miss"
+    Ms  : Print "Mizz"
+    Dr  : Print "Doctor"
+ ENDCASE
+
+Ex2)
+- CASE grade OF
+    A : points = 4
+    B : points = 3
+    C : points = 2
+    D : points = 1
+    F : points = 0
+  ENDCASE
+
+*** FOR
+- FOR iteration bounds
+    sequence
+  ENDFOR
+
+Ex1)
+- FOR each month of the year (good)
+- FOR month = 1 to 12 (ok)
+- FOR each employee in the list (good)
+- FOR empno = 1 to listsize (ok)
+
+** Other How To
+*** NESTED CONSTUCTS
+Ex1)
+- SET total to zero
+  REPEAT
+    READ Temperature
+    IF Temperature > Freezing THEN
+      INCREMENT total
+    ENDIF
+  UNTIL Temperature < zero
+  Print total
+
+*** INVOKING SUBPROCEDURES
+Use the 'CALL' keyword
+
+ex)
+CALL AvgAge with StudentAges
+CALL Swap with CurrentItem and TargetItem
+CALL Account.debit with CheckAmount
+CALL getBalance RETURNING aBalance
+CALL SquareRoot with orbitHeight RETURNING nominalOrbit
+
+*** EXEPTION HANDLING
+ex1)
+- BEGIN
+    statements
+  EXCEPTION
+    WHEN exception type
+      statements to handle exception
+    WHEN another exception type
+      statements to handle exception
+  END
+** Sample Pseudocode
+- "Adequate"
+  FOR X = 1 to 10
+    FOR Y = 1 to 10
+      IF gameBoard[X][Y] = 0
+        Do nothing
+      ELSE
+        CALL theCall(X, Y) (recursive method)
+        increment counter
+      END IF
+    END FOR
+   END FOR
+
+- "Better"
+  Set moveCount to 1
+  FOR each row on the board
+    FOR each column on the board
+      IF gameBoard position (row, column) is occupied THEN
+        CALL findAdjacentTiles with row, column
+        INCREMENT moveCount
+      END IF
+    END FOR
+  END FOR
+(Note: the logic is restructured to omit the "do nothing" clause) 
+
+- "Not so Good"
+  FOR all the number at the back of the array
+    SET Temp equal the addition of each number
+    IF > 9 THEN
+      get the remainder of the number divided by 10 to that index
+      and carry the "1"
+    Decrement one
+   Do it again for numbers before the decimal
+
+- "Good Enough (not perfect)"
+  SET Carry to 0
+  FOR each DigitPosition in Number from least significant to most significant
+
+    COMPUTE Total as sum of FirstNum[DigitPosition] and SecondNum[DigitPosition] and Carry  
+
+    IF Total > 10 THEN
+      SET Carry to 1
+      SUBTRACT 10 from Total
+    ELSE
+      SET Carry to 0
+    END IF
+
+    STORE Total in Result[DigitPosition]
+  END LOOP
+
+  IF Carry = 1 THEN
+    RAISE Overflow exception
+  END IF
+
+- "Pretty Good"
+This example shows how pseudocode is written as comments in the source file. Note that the double slashes are indented.
+#+begin_src java
+public boolean moveRobot (Robot aRobot)
+{
+    //IF robot has no obstacle in front THEN
+        // Call Move robot
+        // Add the move command to the command history
+        // RETURN true
+    //ELSE
+        // RETURN false without moving the robot
+    //END IF
+}
+#+end_src
+
+- Example Java Implementation
+  source code statements are interleaved with pseudocode.
+  comments that correspond exactly to source code are removed during coding.
+
+  #+begin_src java
+  public boolean moveRobot (Robot aRobot)
+  {
+      //IF robot has no obstacle in front THEN
+      if (aRobot.isFrontClear())
+      {
+          // Call Move robot
+          aRobot.move();
+          // Add the move command to the command history
+          cmdHistory.add(RobotAction.MOVE);
+          return true;
+      }
+      else // don't move the robot
+      {
+          return false;
+      }//END IF
+  }
+  #+end_src
