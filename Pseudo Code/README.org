@@ -107,23 +107,31 @@ https://users.csc.calpoly.edu/~jdalbey/SWE/pdl_std.html
 | IF-THEN-ELSE | 두개중 선택 |
 
 *** SEQUENCE
-- SEQUENCE
-    do1
-    do2
-    do3...
+- Use
+#+begin_src
+SEQUENCE
+  do1
+  do2
+  do3...
+#+end_src
 
 Ex)1
-- SEQUENCE
-    Brush teeth
-    Wash face
-    Comb hair
-    Smile in mirror
+- Ex)1
+#+begin_src
+SEQUENCE
+  Brush teeth
+  Wash face
+  Comb hair
+  Smile in mirror
+#+end_src
 
-Ex)2
-- SEQUENCE
-    READ height of rectangle
-    READ width of rectangle
-    COMPUTE area as height times width
+- Ex)2
+#+begin_src
+SEQUENCE
+  READ height of rectangle
+  READ width of rectangle
+  COMPUTE area as height times width
+#+end_src
 
 - Common Action Keywords
   | Indicate  | Keywords                      |
@@ -136,35 +144,47 @@ Ex)2
 
 
 *** IF-THEN-ELSE
-- IF condition THEN
+- Use
+#+begin_src
+IF condition THEN
     sequence1
   ELSE
     sequence2
   ENDIF
 (ELSE, sequence2 are optional)
+#+end_src
 
-Ex)1
-- IF HoursWorked > NormalMax THEN
-    Display overtime message
-  ELSE
-    Display regular time message
-  ENDIF
+- Ex)1
+#+begin_src
+IF HoursWorked > NormalMax THEN
+  Display overtime message
+ELSE
+  Display regular time message
+ENDIF
+#+end_src
 
 *** WHILE
-- WHILE condition
-    sequence
-  ENDWHILE
-
-Ex)1
-- WHILE Population < Limit
-    Compute Population as Population + Births - Deaths
-  ENDWHILE
-
-Ex)2
-- WHILE employee.type NOT EQUAL manager AND personCount < numEmployees
-    INCREMENT personCount
-    CALL employeeList.getPerson with personCount RETURNING employee
+- Use
+#+begin_src
+WHILE condition
+  sequence
 ENDWHILE
+#+end_src
+
+- Ex)1
+#+begin_src
+WHILE Population < Limit
+  Compute Population as Population + Births - Deaths
+ENDWHILE
+#+end_src
+
+- Ex)2
+#+begin_src
+WHILE employee.type NOT EQUAL manager AND personCount < numEmployees
+  INCREMENT personCount
+  CALL employeeList.getPerson with personCount RETURNING employee
+ENDWHILE
+#+end_src
 
 ** Useful Constructs
 | Constructs   | Mean                      |
@@ -174,44 +194,57 @@ ENDWHILE
 | FOR          | 카운팅 루프               |
 
 *** REPEAT-UNTIL
-- REPEAT
-    sequence
-  UNTIL condition
+- Use
+#+begin_src
+REPEAT
+  sequence
+UNTIL condition
+#+end_src
 
 *** CASE
-- CASE expression OF
-    condition1: sequence1
-    condition2: sequence2
-    ...
-    conditionN: sequenceN
-    OTHERS:
-    default_sequence
-  ENDCASE
+- Use
+#+begin_src
+CASE expression OF
+  condition1: sequence1
+  condition2: sequence2
+  ...
+  conditionN: sequenceN
+  OTHERS:
+  default_sequence
+ENDCASE
+#+end_src
 
-Ex1)
-- CASE Title OF
-    Mr  : Print "Mister"
-    Mrs : Print "Missus"
-    Miss: Print "Miss"
-    Ms  : Print "Mizz"
-    Dr  : Print "Doctor"
- ENDCASE
+- Ex)1
+#+begin_src
+CASE Title OF
+  Mr  : Print "Mister"
+  Mrs : Print "Missus"
+  Miss: Print "Miss"
+  Ms  : Print "Mizz"
+  Dr  : Print "Doctor"
+ENDCASE
+#+end_src
 
-Ex2)
-- CASE grade OF
-    A : points = 4
-    B : points = 3
-    C : points = 2
-    D : points = 1
-    F : points = 0
-  ENDCASE
+- Ex)2
+#+begin_src
+CASE grade OF
+  A : points = 4
+  B : points = 3
+  C : points = 2
+  D : points = 1
+  F : points = 0
+ENDCASE
+#+end_src
 
 *** FOR
-- FOR iteration bounds
-    sequence
-  ENDFOR
+- Use
+#+begin_src
+FOR iteration bounds
+  sequence
+ENDFOR
+#+end_src
 
-Ex1)
+Ex)
 - FOR each month of the year (good)
 - FOR month = 1 to 12 (ok)
 - FOR each employee in the list (good)
@@ -219,38 +252,46 @@ Ex1)
 
 ** Other How To
 *** NESTED CONSTUCTS
-Ex1)
-- SET total to zero
-  REPEAT
-    READ Temperature
-    IF Temperature > Freezing THEN
-      INCREMENT total
-    ENDIF
-  UNTIL Temperature < zero
-  Print total
+
+- Ex)1
+#+begin_src
+SET total to zero
+REPEAT
+  READ Temperature
+  IF Temperature > Freezing THEN
+    INCREMENT total
+  ENDIF
+UNTIL Temperature < zero
+Print total
+#+end_src
 
 *** INVOKING SUBPROCEDURES
 Use the 'CALL' keyword
 
-ex)
+- Ex)
+#+begin_src
 CALL AvgAge with StudentAges
 CALL Swap with CurrentItem and TargetItem
 CALL Account.debit with CheckAmount
 CALL getBalance RETURNING aBalance
 CALL SquareRoot with orbitHeight RETURNING nominalOrbit
+#+end_src
 
 *** EXEPTION HANDLING
-ex1)
-- BEGIN
-    statements
-  EXCEPTION
-    WHEN exception type
-      statements to handle exception
-    WHEN another exception type
-      statements to handle exception
-  END
+- Ex)
+#+begin_src
+BEGIN
+  statements
+EXCEPTION
+  WHEN exception type
+    statements to handle exception
+  WHEN another exception type
+    statements to handle exception
+END
+#+end_src
 ** Sample Pseudocode
 - "Adequate"
+#+begin_src
   FOR X = 1 to 10
     FOR Y = 1 to 10
       IF gameBoard[X][Y] = 0
@@ -261,8 +302,10 @@ ex1)
       END IF
     END FOR
    END FOR
+#+end_src
 
 - "Better"
+#+begin_src
   Set moveCount to 1
   FOR each row on the board
     FOR each column on the board
@@ -272,9 +315,11 @@ ex1)
       END IF
     END FOR
   END FOR
-(Note: the logic is restructured to omit the "do nothing" clause) 
+#+end_src
+(Note: the logic is restructured to omit the "do nothing" clause)
 
 - "Not so Good"
+#+begin_src
   FOR all the number at the back of the array
     SET Temp equal the addition of each number
     IF > 9 THEN
@@ -282,12 +327,14 @@ ex1)
       and carry the "1"
     Decrement one
    Do it again for numbers before the decimal
+#+end_src
 
 - "Good Enough (not perfect)"
+#+begin_src
   SET Carry to 0
   FOR each DigitPosition in Number from least significant to most significant
 
-    COMPUTE Total as sum of FirstNum[DigitPosition] and SecondNum[DigitPosition] and Carry  
+    COMPUTE Total as sum of FirstNum[DigitPosition] and SecondNum[DigitPosition] and Carry
 
     IF Total > 10 THEN
       SET Carry to 1
@@ -302,6 +349,7 @@ ex1)
   IF Carry = 1 THEN
     RAISE Overflow exception
   END IF
+#+end_src
 
 - "Pretty Good"
 This example shows how pseudocode is written as comments in the source file. Note that the double slashes are indented.
