@@ -52,7 +52,7 @@ CPS(Continuation Passing Style)에서 생각한다면 스택과 함수의 리턴
 
 앞서의 길어지는 람다와 위에서처럼 CPS로 작성한 코드는 같다! 프리미티브를 구현한다면 앞의 예제와 같은 작용을 한다. 설명을 덧붙이면 이 예제에서는 팩토리얼 계산에서 값을 되돌리는 함수 적용이 없다. 모두 다른 함수를 호출할 뿐이다. 의도한 스타일이 더 명확해 보인다!(프리미티브 구현은 [[https://web.archive.org/web/20171010235747/http://repository.readscheme.org/ftp/papers/ai-lab-pubs/AIM-353.pdf][Lambda: The Ultimate Declarative]]([[https://apps.dtic.mil/dtic/tr/fulltext/u2/a030751.pdf][text 버전]])의 뒷부분에 적고 있다)
 
-아마추어인 이유로 인터넷이 스승인 필자는 처음에 위키백과에 나오는 [[http://en.wikipedia.org/wiki/Continuation-passing_style][CPS]]와 [[http://en.wikipedia.org/wiki/Continuation][컨티뉴에이션]]을 잘 이해하지 못했다. 사실 두 개의 글이 잘 요약되기는 했으나 좀처럼 이해할 수가 없었다. 약간의 이해라도 제공한 문헌은 사실 [[http://library.readscheme.org/page1.html][오리지널 람다 페이퍼]]였다. 그나마 반나절 동안 fact 코드를 들여다 보고서야 간신히 이해했다. 앞의 CPS 버전의 fact를 위키백과에 나오는 예제들과 비교해 보면 독자들의 이해가 조금 쉬워질 것으로 보인다.
+아마추어인 이유로 인터넷이 스승인 필자는 처음에 위키백과에 나오는 [[http://en.wikipedia.org/wiki/Continuation-passing_style][CPS]]와 [[http://en.wikipedia.org/wiki/Continuation][컨티뉴에이션]]을 잘 이해하지 못했다. 사실 두 개의 글이 잘 요약되기는 했으나 좀처럼 이해할 수가 없었다. 약간의 이해라도 제공한 문헌은 사실 [[https://web.archive.org/web/20180807220913/http://library.readscheme.org/page1.html][오리지널 람다 페이퍼]]였다. 그나마 반나절 동안 fact 코드를 들여다 보고서야 간신히 이해했다. 앞의 CPS 버전의 fact를 위키백과에 나오는 예제들과 비교해 보면 독자들의 이해가 조금 쉬워질 것으로 보인다.
 
 CPS를 사용하면 프로그래머의 프로그램 컨트롤에 대한 통제력이 증가하지만 반면에 확실하게 돌아가도록 신경을 써야 한다는 전제 조건이 붙는다. 여러 가지 고려해야 할 조건이 있기 때문이며 프로그래머는 이를 모두 고려해야 한다.
 

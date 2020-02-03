@@ -1,4 +1,4 @@
-* 해커 문화의 뿌리를 찾아서 Part 3: 해커리즘의 문화 
+* 해커 문화의 뿌리를 찾아서 Part 3: 해커리즘의 문화
 :PROPERTIES:
 :TOC:      this
 :END:
@@ -67,45 +67,45 @@
 
 [[https://user-images.githubusercontent.com/25581533/73677989-c0e19900-46fa-11ea-8ab2-d7212015af43.png]]
 
-*그림 4. PDP-1(www.computerhistory.org의 사진에서)*
+*그림 4. PDP-1(www.computerhistory.org 의 사진에서)*
 
 ** 람다 계산법(Lambda Calculus)
 열정과 집중이 중요하다는 이야기를 너무 길게 한 것 같다. 이제 다시 리스프 이야기로 돌아오자.
 
 리스프가 람다 표기법을 채택한 것은 지난번에 설명했다. 리스프 프로그램에 대해 자세히 설명하지도 않고 리스프 인터프리터를 만드는 이야기를 진행하였으니 황당하기는 하지만 실제로 리스프는 그렇게 갑자기 세상에 나타난 것이다.
 
-리스프는 함수를 람다 표기법으로 나타낸다. 람다 표기법은 특별히 수나 기호를 구분하지 않는다. 람다 표기법은 조금 생소한 것이라 설명이 필요하다. 람다 계산법은 치환을 다루는 계산법이다. 전반적인 내용이나 배경이 [[http://en.wikipedia.org/wiki/Lambda_calculus][위키백과]]에 상당히 잘 정리되어 있다. 필자는 람다 계산법을 설명하기 위해 ‘[[http://www.jetcafe.org/jim/lambda.html][An Introduction to Lambda Calculus and Scheme]]’에 나오는 예제를 그대로 몇 개 인용해 보았다.
+리스프는 함수를 람다 표기법으로 나타낸다. 람다 표기법은 특별히 수나 기호를 구분하지 않는다. 람다 표기법은 조금 생소한 것이라 설명이 필요하다. 람다 계산법은 치환을 다루는 계산법이다. 전반적인 내용이나 배경이 [[http://en.wikipedia.org/wiki/Lambda_calculus][위키백과]]에 상당히 잘 정리되어 있다. 필자는 람다 계산법을 설명하기 위해 ‘[[https://web.archive.org/web/20150711203437/https://www.jetcafe.org/jim/lambda.htmll][An Introduction to Lambda Calculus and Scheme]]’에 나오는 예제를 그대로 몇 개 인용해 보았다.
 
 함수는 입력을 받는 부분과 결과를 내는 부분이 있다. 이제 우리가 어떤 대상에 초콜릿을 씌우는 함수를 갖고 있다고 생각하고 다음과 같은 것을 생각해 보자.
 #+BEGIN_SRC
-peanuts ->     chocolate-covered peanuts 
-raisins  ->     chocolate-covered raisins 
-ants    ->     chocolate-covered ants 
+peanuts ->     chocolate-covered peanuts
+raisins  ->     chocolate-covered raisins
+ants    ->     chocolate-covered ants
 #+END_SRC
 
 이것을 람다 계산법을 사용하여 표현하면 다음과 같다.
 #+BEGIN_SRC
-Lx.chocolate-covered x 
+Lx.chocolate-covered x
 #+END_SRC
 
 여기서 L은 람다(λ)를 나타낸다. 함수에 인자를 대입하는 것을 다음과 같이 표시한다.
 #+BEGIN_SRC
-(Lx.chocolate-covered x)peanuts -> chocolate-covered peanuts 
+(Lx.chocolate-covered x)peanuts -> chocolate-covered peanuts
 #+END_SRC
 
 람다 계산법에 따르면 람다식에 어떤 인자를 적용한 결과가 또 하나의 함수일 수도 있다. 초콜릿이 아니라 캐러멜을 포장할 수도 있는 것이다. 이를테면 아래와 같은 람다식을 만들 수 있다. 이 식은 y로 싸인 x를 만드는 것이다.
 #+BEGIN_SRC
-Ly.Lx.y-covered x 
+Ly.Lx.y-covered x
 #+END_SRC
 
 이제 캐러멜을 덮는 함수를 만들어낼 수 있다. 식은 y 인자로 캐러멜을 받았다.
 #+BEGIN_SRC
-(Ly.Lx.y-covered x)caramel -> Lx.caramel-covered x 
+(Ly.Lx.y-covered x)caramel -> Lx.caramel-covered x
 #+END_SRC
 
 그리고 이 함수는 다시 땅콩을 덮도록 만들 수 있다. x 인자로 peanuts를 받았다.
 #+BEGIN_SRC
-(Lx.caramel-covered x)peanuts -> caramel-covered peanuts 
+(Lx.caramel-covered x)peanuts -> caramel-covered peanuts
 #+END_SRC
 
 함수의 인자가 반드시 숫자일 필요는 없다. 람다 계산법에서 함수는 다른 함수의 인자가 될 수도 있다. 지난번의 간단한 인터프리터에서도 함수를 다른 함수의 입력으로 사용할 수 있었다. 아래 식에서 f 인자는 함수다.
@@ -115,52 +115,52 @@ Lf.(f)ants
 
 그래서 초콜릿을 포장하는 함수를 ant에 적용할 수 있다. (apply-to-ants)를 잘 살펴보면 단순한 치환이 이루어지는 것을 알 수 있다. ()의 주변을 잘 살펴보라. f는 Lx.chocolate-covered x로 대체되었다. 그리고 x에는 ants가 적용되었다.
 #+BEGIN_SRC
-(Lf.(f)ants)Lx.chocolate-covered x 
--> (Lx.chocolate-covered x)ants 
--> chocolate-covered ants 
+(Lf.(f)ants)Lx.chocolate-covered x
+-> (Lx.chocolate-covered x)ants
+-> chocolate-covered ants
 #+END_SRC
 
 함수가 한 람다식을 적용한 결과로 만들어질 수 있다는 것은 대단한 일로 많은 가능성을 갖고 있다. 이런 것을 클로저(closure)라고 부르기도 하며 리스프나 스킴(scheme)에서 고차함수를 만드는 바탕이 되었다.
 
 자세한 증명은 람다식을 다루는 문헌들을 찾아보기로 하고 람다 계산법이 왜 일반적인 컴퓨팅의 원리로 변할 수 있었는지를 생각해 보자. 사실 컴퓨터는 구현 이전부터 만들어질 수 있는 방법이 있었다. 그 중 하나는 람다 계산법을 통해서다. 전기 스위치를 사용하건 다른 기계적인 무엇을 사용하건 만들어질 수 있었다. 구현 논리는 이미 수학적으로 존재했다. 우선 조건식을 람다함수로 만들어낼 수 있다. 이를테면 참과 거짓을 다음과 같이 만들어낼 수 있다.
 #+BEGIN_SRC
-true = Lx.Ly.x 
-false = Lx.Ly.y 
+true = Lx.Ly.x
+false = Lx.Ly.y
 if-then-else = La.Lb.Lc.((a)b)c
 #+END_SRC
 
 매우 생소하기는 하지만 논리식을 람다 함수로 표시해본 것이다. 몇 개의 치환을 거쳐 람다 함수는 조건식을 정확히 계산한다. 아래의 식은 if-then-else가 참이면 apple을, 거짓이면 banana를 돌려주도록 되어 있다. 미리 false를 적용한 것이라 banana를 돌려준다.
 #+BEGIN_SRC scheme
-(((if-then-else)false)apple)banana 
--> (((La.Lb.Lc.((a)b)c)Lx.Ly.y)apple)banana 
--> ((Lb.Lc.((Lx.Ly.y)b)c)apple)banana 
--> (Lc.((Lx.Ly.y)apple)c)banana 
--> ((Lx.Ly.y)apple)banana 
--> (Ly.y)banana 
--> banana 
+(((if-then-else)false)apple)banana
+-> (((La.Lb.Lc.((a)b)c)Lx.Ly.y)apple)banana
+-> ((Lb.Lc.((Lx.Ly.y)b)c)apple)banana
+-> (Lc.((Lx.Ly.y)apple)c)banana
+-> ((Lx.Ly.y)apple)banana
+-> (Ly.y)banana
+-> banana
 #+END_SRC
 
 간단한 정리 몇 개를 적용한 것치고는 많은 일을 할 수 있는 것 같다는 생각이 들지 않는가? 아무튼 앞서의 초콜릿과 캐러멜을 치환하는 식과 peanuts, raisins, ants를 치환하는 방법을 그대로 적용한 것이다. 종이와 연필로 계산해볼 수 있다. 지난번의 cons와 car, cdr 도 람다식으로 표현할 수 있다.
 #+BEGIN_SRC
-cons = La.Lb.Lc.((c)a)b 
-car = Lx.(x)true 
-cdr = Lx.(x)false 
+cons = La.Lb.Lc.((c)a)b
+car = Lx.(x)true
+cdr = Lx.(x)false
 #+END_SRC
 
 이런 방법으로 생각하는 cons, car, cdr의 정의가 나름대로 중요한 내용이라 실제로 SICP의 비디오 강의 5b에서는 중요한 개념으로 떠오른다. 강의에 나오는 스킴 식에서는 다음과 같이 정의했다.
 #+BEGIN_SRC scheme
-(define (cons x y) (lambda(m) (m x y))) 
-(define (car x) (x (lambda (a d ) a)) 
+(define (cons x y) (lambda(m) (m x y)))
+(define (car x) (x (lambda (a d ) a))
 (define (cdr x) (x (lambda (a d ) d))
 #+END_SRC
 
 이 식을 실제로 수행하면 다음과 같다.
 #+BEGIN_SRC scheme
-(car (cons 35 47)) 
-->(car (lambda (m)(m 35 47))) 
-->((lambda(m)(m 35 47)) (lambda(a d) a)) 
-->((lambda (a d) a) 35 47) 
-->35 
+(car (cons 35 47))
+->(car (lambda (m)(m 35 47)))
+->((lambda(m)(m 35 47)) (lambda(a d) a))
+->((lambda (a d) a) 35 47)
+->35
 #+END_SRC
 
 별것 아닌 것처럼 보이는 내용이겠지만 위 정의를 조금 더 변형하면 사이드 이펙트(side-effect)를 만들어낼 수도 있고 함수형 언어에서 덮어쓰기(assignment)의 메커니즘을 만들어낼 수도 있다. 재귀(recursion) 역시 람다식을 이용해 만들어낼 수 있다. Y 컴비네이터라고 부르는 것인데 리스프에서는 label을 이용한 다른 방법으로 구현했다.
@@ -173,4 +173,4 @@ cdr = Lx.(x)false
 [[https://user-images.githubusercontent.com/25581533/73679135-2898e380-46fd-11ea-9b81-4113b56e3f94.png]]
 피터 노빅(Perer Norvig, http://Norvig.com )이 쓴 책 중에 『Paradigms of Artificial Intelligence Programming: Case Studies in Common Lisp』라는 유명한 책이 있다. 첫 회에 소개한 SICP보다 더 어려운 수준의 책(하드코어에 속한다고 하는 사람도 있다)이지만 리스프로 어떻게 인공지능 문제들을 접근했는지에 대한 좋은 자료다. 책의 2부는 초기 AI 프로그램을 다루고 분석하고 있다. 이를테면 GPS(General Problem Solver), ELIZA, 수학적 기호처리 같은 것들을 다룬다.
 
-책을 사볼 필요는 없겠지만 http://norvig.com/paip.html 에서 ‘Excerpts from the preface, including why Lisp?’ 같은 글들을 읽어 보기 바란다. 어려운 내용도 아니며 좋은 생각거리를 제공할 것이다. 그 외에도 좋은 글들이 꽤 많다.
+책을 사볼 필요는 없겠지만 [[https://github.com/norvig/paip-lisp][Paradigms of Artificial Intelligence Programming]]에서 ‘Excerpts from the preface, including why Lisp?’ 같은 글들을 읽어 보기 바란다. 어려운 내용도 아니며 좋은 생각거리를 제공할 것이다. 그 외에도 좋은 글들이 꽤 많다.
