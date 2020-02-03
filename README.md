@@ -17,6 +17,6 @@ Document-specific licenses are grouped for each project.
 
 ## 구조.
 
-gcc와 make 강좌: gcc와 make 사용법을 포괄적이고 간략하게 설명해놓았습니다.
-
-Presudo Code: 슈도코드를 어떻게 작성하느냐에 대해 간략 다루어놓았습니다.
+* [gcc와 make 강좌](https://github.com/black7375/ReadabilityDocs/tree/master/gcc%EC%99%80%20make%20%EA%B0%95%EC%A2%8C): gcc와 make 사용법을 포괄적이고 간략하게 설명해놓았습니다.
+* [Presudo Code](https://github.com/black7375/ReadabilityDocs/tree/master/Pseudo%20Code): 슈도코드를 어떻게 작성하느냐에 대해 간략 다루어놓았습니다.
+* [컴퓨팅 기술의 원형탐험](https://github.com/black7375/ReadabilityDocs/tree/master/%EC%BB%B4%ED%93%A8%ED%8C%85%20%EA%B8%B0%EC%88%A0%EC%9D%98%20%EC%9B%90%ED%98%95%ED%83%90%ED%97%98): 레지스터 머신부터 시작하여 lazy evalution, same fringe 문제까지.

@@ -22,7 +22,7 @@ thread_block (void (*contfn) ())
 sys_call1 (arg1)
 {
     ... thread_block ()
-    f2(arg1); 
+    f2(arg1);
     return;
 }
 
@@ -81,12 +81,13 @@ SICP 책에는 나와 있지 않으나 original lambda paper에 나오는 컨티
 (define (factorial n)
   (if (= n 1)
       1
-      (* n (factorial (- n 1))))) 
+      (* n (factorial (- n 1)))))
 #+END_SRC
 
 다음 그림은 (factorial 6)을 구하는 경우의 중간 계산을 보여준다.
 
 [[https://user-images.githubusercontent.com/25581533/73614521-35f19780-4643-11ea-9dae-c59e751097f0.png]]
+
 *그림 1. factorial6*
 
 그리고 독자들은 다음 식도 기억할 것이다. 이터레이션(iteration) 문제다.
@@ -105,6 +106,7 @@ SICP 책에는 나와 있지 않으나 original lambda paper에 나오는 컨티
 이 식을 풀면 다음과 같은 중간 계산을 보여준다.
 
 [[https://user-images.githubusercontent.com/25581533/73614576-b1534900-4643-11ea-9fa8-928644433ccf.png]]
+
 *그림 2. count*
 
 그런데 제3의 방법도 있다. 컨티뉴에이션을 이용하는 방법이다. 서스만과 스틸의 장난감 언어에서 구현한 예제다. 식은 매우 간단하다(출처는 Scheme: An Interpreter for Extended Lambda Calculus의 앞부분이다. 이 문서는 ‘inspired by actors’라는 문구로 시작한다). Hewitt이 발견한 방법으로 적용한 것이다.
@@ -112,7 +114,7 @@ SICP 책에는 나와 있지 않으나 original lambda paper에 나오는 컨티
 (define fact
   (lambda (n c)
     (if (= n 0) (c 1)
-        (fact (- n 1) 
+        (fact (- n 1)
               (lambda (a) (c (* n a)))))))
 #+END_SRC
 
@@ -125,42 +127,42 @@ fact3 answer
 -->(if  (= 3 0) (answer 1)
 	(fact (-3 1) (lambda (a) (answer (* 3 a)))))
 -->(fact (- 3 1) (lambda (a) (answer (* 3 a)))))
--->(fact (2) (lambda (a) (answer (* 3 a))))) 
-// 람다에 3을 적용한다. 
+-->(fact (2) (lambda (a) (answer (* 3 a)))))
+// 람다에 3을 적용한다.
 -->(if  (= 2 0) (lambda (a) (answer (* 3 a))) 1 )
-	(fact (- 2 1) 
-		 (lambda (a) 
-	           ( (lambda (a) (answer (* 3 a)))
+	(fact (- 2 1)
+		 (lambda (a)
+                   ( (lambda (a) (answer (* 3 a)))
 			(* 2 a)))))
 // 3이 적용된 람다 함수 자체의 실행 컨텍스트가 c의 값으로 적용되고
-// 다시 (* 2 a)가 적용된다. 
--->(fact (- 2 1) 
-		 (lambda (a) 
-	           ( (lambda (a) (answer (* 3 a)))
+// 다시 (* 2 a)가 적용된다.
+-->(fact (- 2 1)
+		 (lambda (a)
+                   ( (lambda (a) (answer (* 3 a)))
 			(* 2 a)))))
--->(fact 1 
-		 (lambda (a) 
-	           ( (lambda (a) (answer (* 3 a)))
+-->(fact 1
+		 (lambda (a)
+                   ( (lambda (a) (answer (* 3 a)))
 			(* 2 a)))))
 
--->(if (= 1 0) 
-	( (lambda (a) 
-	           ( (lambda (a) (answer (* 3 a)))
-			(* 2 a))))) 
+-->(if (= 1 0)
+	( (lambda (a)
+                   ( (lambda (a) (answer (* 3 a)))
+			(* 2 a)))))
 	1)
 
 	(fact - 1 1)
 		(lambda(a)
 			((lmbda (a)
-				((lambda (a) 
+				((lambda (a)
 					(answer (* 3 a)))
 			(* 2 a)))
 		(* 1 a)))))
-// c는 계속 길어진다. 
+// c는 계속 길어진다.
 -->(fact - 1 1)
 		(lambda(a)
 			((lmbda (a)
-				((lambda (a) 
+				((lambda (a)
 					(answer (* 3 a)))
 			(* 2 a)))
 		(* 1 a)))))
@@ -168,7 +170,7 @@ fact3 answer
 -->(fact 0)
 		(lambda(a)
 			((lmbda (a)
-				((lambda (a) 
+				((lambda (a)
 					(answer (* 3 a)))
 			(* 2 a)))
 		(* 1 a)))))
@@ -176,7 +178,7 @@ fact3 answer
 -->(if (=0 0)
 		((lambda(a)
 			((lmbda (a)
-				((lambda (a) 
+				((lambda (a)
 					(answer (* 3 a)))
 			(* 2 a)))
 		(* 1 a)))
@@ -185,39 +187,39 @@ fact3 answer
  (fact (- 0 1)
     ......))
 
-// 이제 n=0이 되었으므로 컨티뉴에이션에 1을 적용할 수 있다! 
-// 기다랗게 만들어진 람다 함수에 1을 적용하면서 계산이 일어난다. 
+// 이제 n=0이 되었으므로 컨티뉴에이션에 1을 적용할 수 있다!
+// 기다랗게 만들어진 람다 함수에 1을 적용하면서 계산이 일어난다.
 
 ---> ((lambda (a)
 			((lmbda (a)
-				((lambda (a) 
+				((lambda (a)
 					(answer (* 3 a)))
 			(* 2 a)))
 		(* 1 a)))
 		1)
 
----> 	((lambda (a)
-				((lambda (a) 
+--->    ((lambda (a)
+				((lambda (a)
 					(answer (* 3 a)))
 			(* 2 a)))
 		(* 1 1))
-		
+
 
 --->((lambda (a)
-			((lambda (a) 
+			((lambda (a)
 				(answer (* 3 a)))
 		(* 2 a)))
 	1)
 
---->	((lambda (a) 
+--->	((lambda (a)
 				(answer (* 3 a)))
 		(* 2 1))
-	
----> ((lambda (a) 
+
+---> ((lambda (a)
 				(answer (* 3 a)))
 		2)
 --->( answer (* 3 2))
---->( answer 6)   
+--->( answer 6)
 #+END_SRC
 
 이제야 계산이 끝났다. 새로운 방법의 팩토리얼 계산법은 이렇게 끝난 것이다. 괄호가 한두 개 빠지거나 더해졌을지는 모르지만 컨티뉴에이션을 전달하여 문제를 푸는 방식의 기본적인 개념은 어떤 람다에게 값을 전해주는 것뿐이다. fact가 한 일은 아무것도 없다. fact는 이터레이션처럼 동작했고 마지막에는 (fact n c)의 컨티뉴에이션 c에게 n=0인 경우에 1을 적용(apply)했을 뿐이다. 위에 적은 식이 팩토리얼의 재귀나 이터레이션보다 복잡한 것도 없다. 결국 모든 치환과 적용이 일어나면 answer에게 값이 전달된다.
