@@ -144,7 +144,7 @@ SICP에 나오는 스트림 버전의 예제는 앞의 filter와 enumerate-inter
 
 함수를 반드시 바로 계산할 필요는 없다는 사실, 때로는 계산을 하지 않은 편이 낫다는 사실은 매우 중요하다. SICP는 조금 까다로운 예제를 들어 어렵게 설명하고 있다(스트림의 유용성에 대한 논란도 분분한 편이다).
 
-계산을 미루는 것을 게으른 계산(lazy evaluation)이라 부른다(혹시 게으른 계산의 실용적인 사용에 대해 궁금한 독자들은 [[http://www.ibm.com/developerworks/kr/library/l-lazyprog.html][developerWorks]] 기사를 참고하라). SICP는 3장에서 스트림을 설명하고 나서 곧바로 4.2절의 Lazy Evaluator로 넘어간다. 이때도 자료가 부족한 편인데 프리드만이 쓴 "Scheme and the Art of Programming"의 15장은 이 내용을 보강한다. 관심이 있는 독자들에게는 도움이 되겠다.
+계산을 미루는 것을 게으른 계산(lazy evaluation)이라 부른다(혹시 게으른 계산의 실용적인 사용에 대해 궁금한 독자들은 [[https://web.archive.org/web/20090622072128/http://www.ibm.com/developerworks/linux/library/l-lazyprog.html][developerWorks]] 기사를 참고하라). SICP는 3장에서 스트림을 설명하고 나서 곧바로 4.2절의 Lazy Evaluator로 넘어간다. 이때도 자료가 부족한 편인데 프리드만이 쓴 “Scheme and the Art of Programming”의 15장은 이 내용을 보강한다. 관심이 있는 독자들에게는 도움이 되겠다.
 
 ** 인자를 이름으로 넘기기(Call by Name)
 이제 더 중요한 과제인 지연된 람다를 다른 예제를 들어 설명하려고 한다. 이 경우에는 람다가 계산을 일으키지 않는 트릭에 대해 스트림 이전의 형태를 아는 것이 도움이 되겠다. 근본적이고 통찰력이 있는 예제가 바로 스킴에서 call-by-name 문제다. 이 예제는 스틸과 서스만의 Lambda the ultimate imperative에 나온다(더 이전의 중요한 자료는 프리드만의 CONS should not evaluate its argument라는 글이다). 당시 저자들은 call-by-name 같은 접근법이 코루틴이나 제너레이터(generator) 같은 것을 만드는 데 도움을 줄 것으로 보았다.
