@@ -1,0 +1,258 @@
+*  컴퓨팅 기술의 원형 탐험 Part 10 같은 잔가지(same fringe) 문제
+:PROPERTIES:
+:TOC:      this
+:END:
+-  [[#들어가며][들어가며]]
+
+** 들어가며
+지난번 글에서 스트림과 ‘인자를 이름으로 넘기기(call-by-name)’를 설명했다. 이 간단한 예제가 중요한 이유 중 하나는 필요한 계산만 하는 일이 중요하기 때문이다. 불필요한 계산을 끝까지 뒤로 미루는 것도 나쁘지 않다. 불필요한 계산을 하지 않고 넘어가는 것은 중요한 최적화다. 지난번의 인자를 이름으로 넘기기는 람다로 둘러싸서 계산을 지연시키는 것만으로도 일을 간단히 처리할 수 있다는 사실을 보여준다. 그 다음 예제는 call-by-need 같은 것으로 일종의 간단한 최적화다. 관심이 있는 독자들은 더 읽어보면 좋을 것 같다.
+
+이번에 다룰 같은 잔가지(same fringe) 문제는 여러 가지를 생각하게 하는 예제다. 문제를 해결하는 방법이 많기 때문이다(프로그래밍 스타일에 대한 작은 화두들을 던진다).
+
+왼쪽에서 오른쪽처럼 정해진 순위가 있는 트리 구조에서 내부 구조는
+달라도 이파리(leaf)들이 같은 순서로 나타나면 둘은 같은 잔가지다. 아래
+예에서 트리 1과 트리 2는 같은 잔가지다. 트리 3은 아니다.
+
+[[https://user-images.githubusercontent.com/25581533/73643351-ac7bad00-46b6-11ea-99ed-9e3e04cc3aaa.png]]
+*그림 1. 트리*
+
+쉽게 생각할 수 있는 직관적인 방법은 두 개의 트리를 모두 일차원 리스트로 치환해 생각하는 것이다. 고전적인 소스도 많지만 필자는 Dorai Sitaram의 『Teach Yourself Scheme in Fixnum Days』에서 인용했다(SICP를 읽다가 질리는 독자들에게는 무척 좋은 스킴 교재이기도 하며 call/cc 부분에 대한 13장의 설명은 아주 명쾌하다). 지난번에 소개했듯이 리스트 두 개를 비교한다.
+#+BEGIN_SRC scheme
+(same-fringe? '(1 (2 3)) '((1 2) 3))
+=> #t
+(same-fringe? '(1 2 3) '(1 (3 2)))
+=> #f
+#+END_SRC
+
+이 문제에 대한 직관적인 소스 코드는 간단하다.
+#+BEGIN_SRC scheme
+(define same-fringe?
+  (lambda (tree1 tree2)
+    (let loop ((ftree1 (flatten tree1))
+               (ftree2 (flatten tree2)))
+      (cond ((and (null? ftree1) (null? ftree2)) #t)
+            ((or (null? ftree1) (null? ftree2)) #f)
+            ((eqv? (car ftree1) (car ftree2))
+             (loop (cdr ftree1) (cdr ftree2)))
+            (else #f)))))
+
+(define flatten
+  (lambda (tree)
+    (cond ((null? tree) '())
+          ((pair? (car tree))
+           (append (flatten (car tree))
+                   (flatten (cdr tree))))
+          (else
+           (cons (car tree)
+                 (flatten (cdr tree)))))))
+#+END_SRC
+
+소스 코드는 자명하기 때문에 설명이 필요 없을 정도다. 앞의 let loop는 다음과 같이 사용하는 일종의 변형된 letrec이다. define 형태로 바로 바꿀 수 있다.
+#+BEGIN_SRC scheme
+(let countdown ((i 10))
+  (if (= i 0) 'liftoff
+      (begin
+        (display i)
+        (newline)
+        (countdown (- i 1)))))
+#+END_SRC
+
+flatten 프로시저는 cdr 재귀로 리스트를 밋밋한 1차원 리스트로 치환한다.
+#+BEGIN_SRC scheme
+> (flatten '(1 2 3) )
+(1 2 3)
+> (flatten '((1 2) 3) )
+(1 2 3)
+#+END_SRC
+
+same-fringe? 프로시저에서 (let loop ((ftree1 (flatten tree1)) (ftree2 (flatten tree2)))로 tree1을 밋밋하게 만든 ftree1을 받아 초기화한다. ftree2도 마찬가지다. 리스트 끝에 도달할 때까지 이파리를 비교한다. 이른바 함수형 스타일(Functional Style) 예제다. 리스프(LISP)를 발견한 존 매카시가 작성한 예제는 위의 예제보다 조금 더 우아한 함수형 스타일을 보이지만 접근방법은 마찬가지다.
+#+BEGIN_SRC scheme
+(defun leaves (tree)
+  (cond ((atom tree) (list tree))
+        (t (append (leaves (car tree))
+                   (leaves (cdr tree))))))
+
+(defun samefringe (tree1 tree2)
+  (equal (leaves tree1) (leaves tree2)))
+#+END_SRC
+
+지난번의 스트림이나 인자를 이름으로 넘기기에서 제기한 문제점들과 마찬가지로 이 루틴은 원래의 트리를 끝까지 읽어 처리한다(스트림에서는 큰 범위의 소수값을 얻기 위해 엄청나게 기다리거나 메모리 부족을 기다려야 했다). 결과를 내려면 이것들을 모두 CONSing해야 하는데 두 벌의 복사본이 필요하며 처리 도중에 만들어지는 중간 결과값도 무시 못 할 정도다. 아무리 최적화를 진행해도 적어도 트리의 원소 수에 해당하는 CONS 작업이 필요하다. 트리가 커지면 계산은 한없이 느려지고 중간 값들도 늘어난다. 중간 값들을 저장하지 못할 수도 있다.
+
+하지만 같은 잔가지 문제를 푸는 방법의 감을 잡았으니 독자들도 독자적인 해법을 하나 둘씩 생각할 수 있을 것이다. 방법은 정말 다양하다. 그 중 하나는 제네레이터를 사용하는 것인데 아래 예제인 tree->generator는 한번 호출이 일어날 때마다 다음 값을 내어준다(C 언어의 random() 같은 것을 랜덤 제네레이터라고 부른다). 이 예제 역시 『Teach Yourself Scheme in Fixnum Days』에 나오는 예제다(유명한 예제로 비슷한 예들은 넘치도록 많다). 이 예제에서는 CONS를 사용하지 않고 마지막 값을 되돌리며 그 다음 호출이 일어나면 새로운 계산을 한다.
+#+BEGIN_SRC scheme
+(define tree->generator
+  (lambda (tree)
+    (let ((caller '*))
+      (letrec
+          ((generate-leaves
+            (lambda ()
+              (let loop ((tree tree))
+                (cond ((null? tree) 'skip)
+                      ((pair? tree)
+                       (loop (car tree))
+                       (loop (cdr tree)))
+                      (else
+                       (call/cc
+                        (lambda (rest-of-tree)
+                          (set! generate-leaves
+                                (lambda ()
+                                  (rest-of-tree 'resume)))
+                          (caller tree))))))
+              (caller '()))))
+        (lambda ()
+          (call/cc
+           (lambda (k)
+             (set! caller k)
+             (generate-leaves))))))))
+
+(define same-fringe?
+  (lambda (tree1 tree2)
+    (let ((gen1 (tree->generator tree1))
+          (gen2 (tree->generator tree2)))
+      (let loop ()
+        (let ((leaf1 (gen1))
+              (leaf2 (gen2)))
+          (if (eqv? leaf1 leaf2)
+              (if (null? leaf1) #t (loop))
+              #f))))))
+#+END_SRC
+
+이번 예제의 same-fringe? 프로시저는 ((gen1 (tree->generator tree1)) (gen2 (tree->generator tree2)))로 tree1을 밋밋하게 만든 gen1으로 초기화한다. gen2도 마찬가지다. 리스트의 끝에 도달할 때까지 이파리를 비교한다. 앞의 예제와 다를 것은 없다.
+
+리스프 계열 언어들의 장점은 모듈별로 상당한 수준까지 상향식(bottom up) 접근이 되는 것일 것이다. 우선 call/cc로 만든 트리 제네레이터를 돌려보자:
+#+BEGIN_SRC scheme
+> (define call/cc call-with-current-continuation)
+> (tree->generator '((1 2) 3) )
+#<procedure> // 계산을 기다리는 프로시저다.
+> ((tree->generator '((1 2) 3) ))
+1 // 계산(evaluate)해 본다. 예상대로 1이 나온다.
+> ((tree->generator '((1 2) 3) ))
+1 // 다시 계산해 본다. 또 1이 나온다. 새로 초기화되었다. 
+>(define leaf1 (tree->generator '((1 2) 3) )) // 이번에는 leaf1이라는 이름으로 상태를 가진 클로저를 만들어보자.
+> (leaf1)
+1
+> (leaf1)
+2
+> (leaf1)
+3
+> (leaf1)
+() // 제네레이터가 바라던 대로 동작한다. 
+#+END_SRC
+
+call/cc는 직관적으로 설명하면 Sitram의 글에서는 현재 컨티뉴에이션(current continuation)을 프로그램의 나머지 부분(rest of the program)으로 본다. 다음 코드를 보자.
+#+BEGIN_SRC scheme
+(+ 1 (call/cc
+      (lambda (k)
+        (+ 2 (k 3)))))
+#+END_SRC
+
+위 코드는 call/cc의 관점에서는 다음과 같이 본다는 의미다.
+#+BEGIN_SRC scheme
+(1+ [])
+#+END_SRC
+
+[]은 정말 하나의 작은 구멍처럼 본다. 무엇이 나타날지는 알 수 없다.
+
+call with의 의미는 []에 무엇을 넣는가이다. call/cc의 인자 k는 프로그램의 나머지 부분을 대표한다. 여기에 (lambda (k) (+ 2 (k 3)))처럼 k에 3을 적용하면 []는 3으로 변한다. 앞의 + 2 계산은 의미가 없어진다. 현재의 컨티뉴에이션에 3을 적용하는 것이 전부이자 마지막인 것이다. 프로그램이 앞으로 더 할 일은 여기서 끝난다. (+2 []) 계산에서 빠져 나오는 것이다. 컨티뉴에이션이 3이다. 그래서 []는 3으로 변한다. 결국 (+ 1 [])은 (+ 1 3)이다. 이런 방법을 이스케이프 컨티뉴에이션(escape continuation)이라고 부른다.
+
+그러나 컨티뉴에이션은 다른 방법으로도 사용된다. 어보티브 컨티뉴에이션(abortive continuation)이라고 부르는 것은 이전에 버려졌던 문맥을 되살리는 데 사용된다. 프로그램의 나머지 부분, 그러니까 []을 저장하면 몇 번이건 그 부분을 되살릴 수 있다.
+#+BEGIN_SRC scheme
+>(define r #f)
+>(+ 1 (call/cc
+       (lambda (k)
+         (set! r k)
+         (+ 2 (k 3)))))
+=> 4
+
+#+END_SRC
+
+앞의 예제와 차이점은 글로벌 변수 r에 k를 저장한 것이다. 따라서 r은 그 이전까지의 모든 것이다.
+#+BEGIN_SRC scheme
+> r
+#<continuation>
+#+END_SRC
+
+r에서 본다면 (+ 1 [])까지 무엇을 하다가 만 것이다. 그러므로 (r 5)는 k에 5를 적용한 것과 마찬가지다.
+#+BEGIN_SRC scheme
+>(r 5)
+6
+#+END_SRC
+
+그리고 r이 계산 중간에 나타나면 그 이전에 하던 일들을 모두 버린다(abort).
+#+BEGIN_SRC scheme
+(+ 3 (r 5))
+6
+#+END_SRC
+
+앞에 하던 계산은 다 필요가 없어지고 그냥 r에 5를 적용하던 앞의 문맥이 허공에서 나타나듯 계산이 일어난다.
+
+tree->generator의 가장 중요한 부분은 두 군데다.
+#+BEGIN_SRC scheme
+(call/cc (lambda (rest-of-tree) ... 
+(call/cc (lambda (k) ...
+#+END_SRC
+
+밑 부분의 lambda()는 일종의 프로시저 본체로 tree->generator가 호출되면 맨 먼저 실행되는 부분이다. (set! caller k)는 caller에 현재 문맥을 저장하고 generate-leaves를 부른다.
+
+generate-leaves 역시 동작은 정해져 있다. loop (tree tree)는 트리의 값을 car, cdr을 이용해 이파리를 찾아가는 루틴이다. 이파리에 해당하는 부분에 오면 일종의 []가 기다리고 있다.
+#+BEGIN_SRC scheme
+(call/cc
+ (lambda (rest-of-tree)
+   (set! generate-leaves
+         (lambda ()
+           (rest-of-tree 'resume)))
+   (caller tree)))
+#+END_SRC
+
+generate-leaves는 (lambda () (rest-of-tree 'resume))의 값으로 변한다. caller tree가 나무의 이파리 값을 caller에 적용하면 call/cc가 받아 이를 되돌린다. 다음에 generate-leaves를 부르면 함수의 처음부터 시작하는 것이 아니라 이스케이프 컨티뉴에이션을 일으킨 부분에서 다시 시작한다. 그러니 어보티브 컨티뉴에이션인 셈이다.
+
+따라서 tree->generator를 부르면 (set! caller k)로 현재 위치를 저장하고 generate-leaves를 부른다. generate-leaves는 (caller tree)로 트리의 리프 노드를 적용한다. 이 작업은 빈 리스트가 될 때까지 계속된다(이보다 조금 더 간단하지만 구조는 같은 예제가 위키백과의 [[http://en.wikipedia.org/wiki/Call-with-current-continuation][Call-with-current-continuation]에 있다).
+
+이런 형태의 제네레이터는 스트림과는 또 다른 모습이다. 상당히 편리하며 사용하기도 깔끔하다. 물론 스트림으로 구현한 예제도 있다(패턴으로 이름이 알려진 워드 커닝엄의 사이트에 정리되어 있다. http://c2.com/cgi/wiki?SameFringeProblem에 보면 여러 가지 언어로 구현한 예제가 나온다). 지난번의 스트림 버전의 소수(prime) 찾기 문제를 제네레이터의 우아한 형식으로 만들 수 있다. 소수가 발견될 때마다 값을 되돌리면 된다. 이해하기도 더 쉬울 것이고 필터와 지연된 연산으로 머리를 싸맬 이유도 없다. 스트림은 복잡해지면 지연된 연산의 제어가 어렵다.
+
+call/cc로 만든 이번 예제에는 발전형이 더 있다. call/cc의 중요한 사용법의 하나인 코루틴(coroutine)이다. 코루틴을 컨티뉴에이션으로 구현한 사람은 스트림을 지연된 리스프로 구현한 다니엘 프리드만(Daniel Friedman)이다. 코루틴은 서브루틴의 일반화된 형태다. 필요한 시점이 되면 계산한 값을 다른 프로시저나 함수에 이양하고(yield) 다시 진입할 때에는 이양이 끝난 다음 지점으로 들어온다. 코루틴을 사용한 예제가 많으나 Sitram의 call/cc 바로 뒤에는 설명을 곁들인 코루틴 예제가 나온다(책의 예제는 스킴의 매크로를 이용하기는 하지만 매크로를 사용하지 않고도 풀 수 있다). 설명까지 같이 있으니 소스 코드만 이해하는 것보다 훨씬 쉽다고 볼 수 있다.
+
+코루틴은 다른 언어들에도 사용된다. 파이썬(Python)이나 루비(Ruby)는 yield를 사용하며 자바에도 사용하려는 움직임이 있다. 이는 제네레이터(generator)나 이터레이터(iterator)라는 이름으로 사용이 늘어나고 있다. 함수를 일종의 독립된 모듈처럼 그리고 모든 계산을 다 하지 않는 형태의 이점이 크기 때문이다. yield하면 제어는 원래의 호출자에 돌아간다. 코루틴은 아주 단순하므로 오류를 일으킬 여지도 적다. 아무튼 이것들은 모두 상태를 갖는 함수를 전제로 하며 클로저라고 볼 수 있다.
+
+위키백과의 코루틴 예제(다른 자료도 많지만)는 일반형으로 다음과 같은 모습이다. 독자들이 운영체제를 배우면서 한번은 보았을 생산자-소비자 문제다.
+#+BEGIN_SRC
+var q := new queue
+
+coroutine produce
+    loop
+        while q is not full
+            create some new items
+            add the items to q
+        yield to consume
+
+coroutine consume
+    loop
+        while q is not empty
+            remove some items from q
+            use the items
+        yield to produce 
+#+END_SRC
+
+생산자(produce)는 아이템을 재고가 꽉 찰 때까지 만들어낸다. 그 다음에는 yield 명령으로 제어를 포기하는데 제어는 소비자(consume)로 간다. 소비자는 재고를 다 소진하면 yield 명령으로 제어를 포기하고 생산자에게 제어를 돌린다. 위에 적은 간단한 루틴에서는 세마포어나 다른 잠금 설비가 필요 없이 생산과 소비의 문제를 해결한다. 너무 단순하다는 것 빼고는 별다른 문제가 없다.
+
+코루틴은 사실상 goto다. 값을 되돌리는 call보다는 goto에 가깝다. 그래서 어셈블리어로 보여주는 편이 빠르며 인터넷에 예제도 많다. 많이 인용되는 예제 중 하나는 David Mertz가 Randall Hyde's The Art of Assembly에서 인용하여 사용한 그림이다([[http://gnosis.cx/publish/programming/charming_python_b5.html][Charming Python #b5]라는 글로 상당히 정리가 잘된 글이다. 파이선의 2.5 이전의 버전이지만 근본적인 내용을 잘 설명하고 있다. 관심 있는 독자들은 읽어 보면 좋을 것이다. IBM developerWorks에 소개된 기사도 있는데 저자는 이것들을 제어 흐름(control flow)의 주제로 분류했다. 그래서 필자의 이전 글들과 비교해 보면 Metz의 주장이 더 쉽게 이해될지도 모른다). 그림에서 프로세스 #1과 #2의 동작은 원래 상태를 기억하며 제어의 주고받기를 계속한다. 그림에서는 yield 대신 cocall을 사용했다.
+
+[[https://user-images.githubusercontent.com/25581533/73643566-1431f800-46b7-11ea-8fdc-ed13d5e8de1d.png]]
+*그림 2. Cocall Sequence Between Two Processes*
+
+그림을 보고 독자들은 결국 이 그림은 두 개의 call/cc를 사용한 스킴 프로그램과 같은 것이 아닌가 하고 되물을 것이다. 사실이다. 코루틴은 중요한 패턴을 정리하여 일반화한 것이다.
+
+코루틴은 복잡한 상태 기계(state machine)를 비교적 간단하게 만들 수 있다는 장점을 갖고 있다. 변수의 문맥을 잘 유지할 능력과 설비만 있으면 패턴화된 goto의 일반적이고 유연한 표현 능력은 매우 뛰어나다(일반적인 예제와 설명은 Charming Python #b5를 읽는 편이 빠를 것이다. David Mertz의 글은 매우 좋은 설명을 담고 있다). 워드 커닝엄이 만든 C2 위키의 예제들도 좋은 설명과 예제를 적고 있다(http://c2.com/cgi/wiki?CoRoutine).
+
+어떤 함수를 호출하고 리턴값을 기다리는 일반적인 패턴을 잊어버리면 유연한 패턴을 기대할 수 있다. 이를테면 프로시저마다 빠져나오면서 저장한 call/cc의 값을 갖는다고 하자. c1, c2, c3 ... 같은 식으로 정할 수 있겠다. 그러면 c1은 현재 상태에서 c2나 c3, ... cn 어떤 프로시저로도 제어를 넘길 수 있고 이것들은 서브루틴과 비슷하기도 하지만 진입점은 마지막으로 빠져 나온 식이나 문장의 그 다음 지점이 된다. 비슷한 프로시저를 순수한 함수형 언어나 구조적 언어로 작성하려고 하면 상당한 어려움이 있을 것이다. 본질적으로 goto에 해당하는 요소를 도입하는 편이 빠르다. 상태 기계로 보는 것도 좋다.
+
+생산자-소비자 또는 같은 잔가지 문제는 ‘상태를 갖는 goto’의 유연성의 일부를 드러낸다고 볼 수 있다.
+
+사족이긴 하지만 예전에 Edsger Dijkstra의 「Go To Statement Considered Harmful」이라는 글이 있었다. 이 글은 goto는 원시적이며 표현의 자유도가 너무 높아 관리하기 어렵다고 못을 박았다. 그 후 구조적 프로그래밍의 붐이 일어났고 옹호자 중에는 Dijkstra보다 더 심하게 goto를 반대하는 사람들도 나타났다. 커다란 논란이 일어났다. 구조적 프로그래밍이 대세를 잡자 goto는 기피 대상이 되었다. 그런 연유로 Dijkstra의 글이 ‘gotophobia’를 일으켰다고 말한다(예전에 잡지 마이크로소프트웨어에서 김창준 님이 필자와는 다른 각도로 다룬 적이 있다. 반응이 좋아 당시 독자들은 아직도 [[https://www.imaso.co.kr/?doc=bbs/gnuboard.php&bo_table=article&keywords=&page=482&wr_id=932][김창준 님의 글]을 기억하고 있을 것으로 안다). 아무튼 40년 전에 쓴 Dijkstra의 글은 매우 유명한 글임에는 분명하다. 필자는 오랜만에 다시 한번 읽어 보았다(원래 글은 ACM에 있으나 http://www.cs.utexas.edu/users/EWD/ewd02xx/EWD215.PDF에 있는 글을 읽었다). 정확한 이유는 알 수 없지만 글의 끝부분에는 영향을 받지 않을 수 없었으며 영향을 받은 것을 후회하지 않노라고 적은 두 사람이 Peter Landin과 Christoper Strachery였다. 둘은 컨티뉴에이션(continuation) 개념의 창시자다. 어떤 영향인지는 개인적으로 정말 궁금한 사항이다.
+
+goto는 없어지지 않았으며 함수형 언어에서조차 사라지지 않았다. 오히려 중요한 구성요소로 사용하는 언어가 더 많다.
+
+끝으로 초기 형태를 살펴보기 위해 「Scheme: An Interpreter for Extended Lambda Calculus」에 나오는 소스를 살펴보자. 예전의 CPS factorial 바로 다음 부분이다. 아직 call/cc가 나오기 전이지만 이들은 칼 휴이트의 같은 잔가지를 스킴으로 옮겼다. 문맥을 옮긴 것이 아니라 첫 번째 Fringe와 다음번의 Fringe를 컨티뉴에이션 함수에 건네는 것이다. 함수에 리모콘처럼 First와 Next 값을 전달한다.
+
+[[https://user-images.githubusercontent.com/25581533/73643747-61ae6500-46b7-11ea-8d50-ba5787898280.png]]
+*그림 3. Fringe 전달*

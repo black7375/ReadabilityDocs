@@ -1,0 +1,257 @@
+*  컴퓨팅 기술의 원형 탐험 Part 9‘게으른’계산이 필요한 순간
+:PROPERTIES:
+:TOC:      this
+:END:
+-  [[#들어가며][들어가며]]
+-  [[#게으른계산][‘게으른’계산]]
+-  [[#인자를-이름으로-넘기기call-by-name][인자를 이름으로 넘기기(Call by Name)]]
+-  [[#다른-방법론들][다른 방법론들]]
+
+** 들어가며
+필자는 종종 역사를 강조했다. 거기에는 이유가 있다. 현재 복잡하고 과도한 최적화가 일어난 중요한 아이디어 가운데는 처음엔 간단하고 소박한 이유에서 출발한 것이 많기 때문이다. 몇 번의 중요한 변형을 거쳐 포장을 마치고 교과서에 나타난 아이디어들은 일종의 학습물처럼 변한다. 아니면 교과서의 예제로 변하고 만다.
+
+이런 일이 좋은 경우도, 좋지 않은 경우도 있다. 아무튼 필자에게는 그 시작이 그리 어렵지 않다는 확신과 어떤 논리적인 근거로 오늘날의 것처럼 변했는지를 아는 일이 중요했다(이해한 느낌이라도 난다). 그래서 필자는 역사적 맥락을 반드시 살펴보기를 권했다. 맥락을 놓고 보면 도중의 몇 번의 도약과 변화도 사실상 환히 보이며 개념을 만드는 등장인물들도 대략 정해져 있음을 알게 된다. 대략 어떤 문제로 고민하다 어떤 답을 들고 나오는지가 중요하다.
+
+아주 깊은 이해는 아니라도 흐름을 이해할 정도면 문제는 쉽게 이해된다. 시간만 약간 더 들인다면 공부한 결과의 깊이와 폭은 그렇지 않은 경우와는 비교가 안 된다. 그 이후의 이해는 더 빨리 그리고 깊이 늘어날 가능성이 있다. 대신 에너지 소모는 다소 크다.
+
+그 반대의 경우도 있는데 하나의 새로운 주제에 집착하여 이것을 발전시켜 나가는 경우다. 이 경우에도 많은 에너지가 소모되나 결국 나중에 비슷한 주제를 모두 훑어보아야 하기 때문에 비슷한 경로를 밟는다. 개념이라는 것이 어디서 툭 떨어지는 것은 아니기 때문이다. 대부분 집요한 사고의 산물이다.
+
+중요한 글들의 가치가 있다면 근본적인 문제를 들고 나왔기 때문이며 이들은 답이 아니라 문제 그 자체인 경우가 더 많다. 답은 문제에서 나오지만 본질적인 문제 제기들은 답이 나와도 남아있다. 이런 글들은 읽어 보는 것이 좋다. 모든 논문을 읽을 수는 없으나 어떤 것들은 (반드시) 읽어야 한다. 개인의 선택이다
+
+** ‘게으른’계산
+이번 회에는 게으른(lazy) 계산법에 관련된 주제를 다룰 것이다. SICP에서는 스트림이라는 제목으로 다루는데 다소 어려운 주제라고 생각하는 사람이 많다. 필자의 생각으로는 정작 스트림보다 더 중요한 주제는 지연된 계산(delayed evaluation) 문제다. 책의 첫 번째 절은 스트림을 지연된 리스트(Streams Are Delayed Lists)로 본다. 스트림은 피터 란딘(Peter Landin)이 고안했고 이 아이디어를 다니엘 프리드만(Daniel Friedman)이 LISP에서 지연된 리스트로 구현한 것을 SICP 저자들이 다시 세련된 모습으로 바꾼 것이다.
+
+책의 예제는 별다른 것이 없다. a와 b 사이의 소수의 합을 구하는 함수부터 출발한다. 코드의 상세한 부분을 몰라도 동작을 이해하는 건 어렵지 않아 보인다. 첫 번째 접근법은 반복(iteration)을 이용하는 예제다. 소수를 고르는 루프를 돌리고 해당하는 소수의 합을 구한다.
+
+#+BEGIN_SRC scheme
+(define (sum-primes a b)
+  (define (iter count accum)
+    (cond ((> count b) accum)
+          ((prime? count) (iter (+ count 1) (+ count accum)))
+          (else (iter (+ count 1) accum))))
+  (iter a 0))
+#+END_SRC
+
+다른 방법은 enumerate-interval이라는 함수에서 a와 b 사이의 정수 리스트를 만들고 조건식(predicate)에 해당하는 부분만을 걸러주는 filter 함수에 적용하여 만든 새로운 리스트를 accumulate 함수에 적용하여 더(+)한다. filter는 predicate에 해당하는 부분만을 cons하여 새로운 리스트를 만든다.
+
+#+BEGIN_SRC scheme
+(define (sum-primes a b)
+  (accumulate +
+              0
+              (filter prime? (enumerate-interval a b))))
+#+END_SRC
+
+필터는 새로울 것이 없다. predicate에 해당하는 부분만 리스트에 더하면 된다.
+#+BEGIN_SRC scheme
+(define (filter predicate sequence)
+  (cond ((null? sequence) nil)
+        ((predicate (car sequence))
+         (cons (car sequence)
+               (filter predicate (cdr sequence))))
+        (else (filter predicate (cdr sequence)))))
+#+END_SRC
+
+리스트를 만들고 필터를 적용하여 걸러낸 리스트를 계속 더해가는 접근법으로 우아한 형식을 갖고 있다. 쉽게 읽을 수 있으며 모듈성이 좋다.
+
+이 방법은 작은 범위에서는 잘 작용하지만 이를테면 10,000에서 1,000,000까지의 정수에서 소수를 구하는 경우에는 시간이 정말 오래 걸린다. 거의 100만 개 정도의 정수 리스트를 만들고 이것을 일일이 필터링하여 몇 개 안 되는 소수를 만들어 낸다. 명백히 비효율적이다. 사실 다 계산할 필요가 없다. 식이 비효율적인 이유는 모든 것을 다 계산하기 때문이다. 그렇다고 enumerate-interval과 filter 그리고 accumulate를 모두 뒤섞은, 처음과 같은 식을 만드는 것은 모듈성을 크게 떨어뜨리고 만다.
+
+이 같은 스트림을 계산하면서 중요한 것은 계산을 다 할 필요가 없다는 사실이다. 스트림에서 중요한 것은 맨 앞의 요소이고, 그 다음의 값들은 나중에 필요하다. 스트림은 데이터를 계속 내어줄 것이라는 일종의 약속이다. 그러니 스트림을 리스트처럼 생각한다면 다음과 같은 식을 만들어 볼 수 있겠다.
+
+#+BEGIN_SRC scheme
+(strean-car (cons-stream x y)) --> x 
+(strean-cdr (cons-stream x y)) --> y
+#+END_SRC
+
+이것은 cons의 구조와 같아 보인다. 그리고 (cons-stream <a> <b>)는 (cons <a> (delay <b>)) 같이 정의한다. 앞의 인자는 cons의 경우와 같지만 뒤의 인자는 계산하지 않는다. 계산하지 않고 미루는 것이다. 그래서 실제 식은 다시 다음과 같이 생각할 수 있다.
+#+BEGIN_SRC scheme
+(define (stream-car stream) (car stream))
+(define (stream-cdr stream) (force (cdr stream)))
+#+END_SRC
+
+직관적으로 생각하면 이렇다. 스트림 내부가 어떤 식으로 되어 있는지는 잘 모른다. 하지만 stream-car에 적용하면 첫 번째 요소가 바로 나오고 stream-cdr에 적용하면 그 다음 요소를 계산하도록 강제한다. 스트림은 데이터를 내어주는 일종의 식(expression)인 것이다.
+
+그러니 일반적인 사용법은 식에 계산을 일으키는 것으로 충분하다. 스트림이 데이터를 내어주는 것만 확실하다면 일반적인 car, cdr 연산과 다르지 않다. 단순하게 생각한다면 첫 번째, 두 번째, 세 번째 식으로 스트림의 요소를 끄집어 내는 방법은 다음과 같다.
+#+BEGIN_SRC scheme
+(stream-car stream )
+(strema-car (stream-cdr strem))
+(strema-car ((strema-cdr (stream-cdr strem))))
+...
+#+END_SRC
+
+그렇다면 먼저 stream의 요소인 delay의 구조를 살펴보자.
+#+BEGIN_SRC scheme
+(delay <exp>) (lambda () <exp>)
+#+END_SRC
+
+delay는 식 앞에 람다로 둘러싸서 계산을 지연한 것이다. force는 지연된 형태의 람다식을 계산하도록 만드는 것이다.
+#+BEGIN_SRC scheme
+(define (force delayed-object)
+  (delayed-object))
+#+END_SRC
+
+실제로 plt 스킴을 돌려 실행해 보면 다음과 같이 나타난다(plt 스킴에서 r5rs 언어 세트를 사용했다. r5rs에서 delay와 force는 별개의 제어 구조로 정의된다).
+#+BEGIN_SRC scheme
+>5
+5
+> (delay 5)
+#<promise>
+> force
+#<procedure:r5rs:force>
+> (force (delay 5))
+5
+#+END_SRC
+
+dealy와 force가 표준이 되기 이전의 원래 형태는 람다를 이용하는 것이었다. lambda()로 둘러싸 평가를 지연하는 것이다.
+#+BEGIN_SRC scheme
+>5
+5
+> (lambda () 5)
+#<procedure>  // 클로저다. 
+> ((lambda () 5)) // (closure)  지연된 식을 평가한다. 
+5
+#+END_SRC
+
+위의 식에서 5를 (+ 1 2) 같은 식으로 대체해도 똑같은 결과를 얻을 것이다.
+
+SICP에 나오는 스트림 버전의 예제는 앞의 filter와 enumerate-interval을 스트림 버전으로 바꾼 것이다. 스트림 버전에서는 예전보다 빠르게 값을 만들어 낸다. 불필요한 부분을 cons하지 않도록 바꾸어 놓았기 때문이다.
+
+#+BEGIN_SRC scheme
+(stream-car
+ (stream-cdr
+  (stream-filter prime?
+                 (stream-enumerate-interval 10000 1000000))))
+#+END_SRC
+
+여기서 바꾸어 놓은 버전은 아래와 같다.
+#+BEGIN_SRC scheme
+(define (stream-enumerate-interval low high)
+  (if (> low high)
+      the-empty-stream
+      (cons-stream
+       low
+       (stream-enumerate-interval (+ low 1) high))))
+
+(define (stream-filter pred stream)
+  (cond ((stream-null? stream) the-empty-stream)
+        ((pred (stream-car stream))
+         (cons-stream (stream-car stream)
+                      (stream-filter pred
+                                     (stream-cdr stream))))
+        (else (stream-filter pred (stream-cdr stream)))))
+#+END_SRC
+
+자세한 동작은 SICP의 3.5.1을 보자. 이 식의 동작은 stream-filter와 stream-enumerate-interval이 상호작용하는 것이다. stream-filter는 지연된 계산을 트리거한다. stream-enumerate-interval이 모든 정수를 다 cons하지 않도록 한다. 사실상 stream-filter는 첫 번째 정수를 찾고 그 다음 정수가 나올 때까지 stream-enumerate-interval을 돌려 찾아낸다. iteration 루프가 돌아가는 것과 같다. 이런 형태로 스트림을 적용하는 방식은 모듈성을 떨어뜨리지 않고 우아한 계산을 가능하게 한다.
+
+함수를 반드시 바로 계산할 필요는 없다는 사실, 때로는 계산을 하지 않은 편이 낫다는 사실은 매우 중요하다. SICP는 조금 까다로운 예제를 들어 어렵게 설명하고 있다(스트림의 유용성에 대한 논란도 분분한 편이다).
+
+계산을 미루는 것을 게으른 계산(lazy evaluation)이라 부른다(혹시 게으른 계산의 실용적인 사용에 대해 궁금한 독자들은 [[http://www.ibm.com/developerworks/kr/library/l-lazyprog.html][developerWorks]] 기사를 참고하라). SICP는 3장에서 스트림을 설명하고 나서 곧바로 4.2절의 Lazy Evaluator로 넘어간다. 이때도 자료가 부족한 편인데 프리드만이 쓴 "Scheme and the Art of Programming"의 15장은 이 내용을 보강한다. 관심이 있는 독자들에게는 도움이 되겠다.
+
+** 인자를 이름으로 넘기기(Call by Name)
+이제 더 중요한 과제인 지연된 람다를 다른 예제를 들어 설명하려고 한다. 이 경우에는 람다가 계산을 일으키지 않는 트릭에 대해 스트림 이전의 형태를 아는 것이 도움이 되겠다. 근본적이고 통찰력이 있는 예제가 바로 스킴에서 call-by-name 문제다. 이 예제는 스틸과 서스만의 Lambda the ultimate imperative에 나온다(더 이전의 중요한 자료는 프리드만의 CONS should not evaluate its argument라는 글이다). 당시 저자들은 call-by-name 같은 접근법이 코루틴이나 제너레이터(generator) 같은 것을 만드는 데 도움을 줄 것으로 보았다.
+
+스킴에서 일반적인 인자 넘기기(parameter passing)는 call-by-value다. 인자의 값은 함수로 넘기기 전에 이미 계산이 이루어진다. 대부분의 다른 언어 역시 call-by-value나 call-by-reference로 넘어간다. 그러나 알골(ALGOL)-60 같은 경우는 call-by-name으로 인자를 넘긴다. 인자는 계산되지 않은 상태의 매크로처럼 넘어간다(실제로는 함수를 다루는 핸들만이 넘어간다). 알골에서는 이런 메커니즘을 썽크(Thunk)라고 불렀다. 이를테면 다음과 같은 항을 만들어내는 함수를 생각해 보자. 함수의 분모는 n의 제곱이다.
+
+#+BEGIN_SRC scheme
+(1/1, 1/4, 1/9, 1/25, ... 1/(n*n) ...)
+#+END_SRC
+
+이런 함수 terms가 있을 때 terms는 직관적으로 다음과 같은 코드로 생각할 수 있다. 아래의 함수는 n 번째 항부터 리스트를 만들어 낸다.
+#+BEGIN_SRC scheme
+> (define terms (lambda(n) (cons (/ 1 (* n n))
+                                 (terms (+ n 1)))))
+
+> (terms 3)
+#+END_SRC
+
+이 함수를 돌리면 리스트를 만들다 모든 자원을 소모하고 스킴 인터프리터는 정지하고 만다. 메모리 부족은 금방 일어난다. 종료 조건이 없는 재귀라 무한 수열을 만들어내며 곧 발산한다. 계산이 멈추지 않으니 계산이 끝나지 않는다. 무한한 리스트를 만드는 enumerate-interval과 같다. 그러니 열심히 계산(eager evaluation)하지 않으면 문제는 쉬워진다.
+
+이런 함수 terms가 제대로 작용할 때 terms가 만들어내는 리스트에 대해 계산을 할 수 있다. 이를테면 car(cdr(cdr(terms(3))))은 1/25이다. 리스트의 세 번째 항부터 계산을 시작하고 그 리스트를 두 번 cdr한 항은 25다.
+
+앞서 말한 것처럼 terms에 종료 조건이 없다고 해도 모든 계산을 다 일으키지 않는다면 별다른 문제가 아니다(다시 말하지만 함수가 반드시 미리 계산될 이유는 없다). 앞서 소개한 예처럼 많은 프로그램이 문제를 미리 풀어서 문제를 일으키기도 한다. 그러니 문제를 푸는 것을 지연시키는 것도 나쁘지 않은 것이다. 계산을 일으키지 않는 쉬운 방법은 람다를 만들되 불필요한 것은 미리 계산하지 않는 것이다.
+
+다음은 위 예제를 요즘의 plt 스킴으로 구현해본 것이다. 책의 코드는 오래 되었지만 매우 본질적인 내용이다. 우선 cbn-car와 cbn-cdr을 정의했다. cbn은 call by name의 약자다. car는 s에 true를, cdr은 flase를 적용한다.
+#+BEGIN_SRC scheme
+> (define cbn-car (lambda(s) (s #t)))
+> (define cbn-cdr (lambda(s) (s #f)))
+#+END_SRC
+
+cbn-cons는 두 인자 x y를 받아 참인 경우 (x)를, 거짓이면 (y)를 내어 놓는다. ()로 둘러싼 것은 x와 y를 계산(evaluate)하는 것을 의미한다.
+#+BEGIN_SRC scheme
+> (define cbn-cons
+    (lambda (x y)
+      (lambda (a)
+        (if a (x) (y)))))
+#+END_SRC
+
+그리고 terms를 정의한다. cbn-cons에 들어가는 함수를 lambda()(...)로 둘러싼 것을 알 수 있다. 계산은 지연된다.
+#+BEGIN_SRC scheme
+> (define terms (lambda(n) (cbn-cons (lambda()(/ 1 (* n n)))
+                                     (lambda ()(terms (+ n 1))))))
+#+END_SRC
+
+그러면 이제 함수를 돌려 볼 수 있다. 가장 본질적인 내용은 terms가 람다 함수를 되돌린다는 내용이다.
+#+BEGIN_SRC scheme
+> (terms 3)
+#<procedure>
+#+END_SRC
+
+(terms 3)은 cbn-cons로 만든 앞서의 스트림 예제와 비슷한 것을 되돌린다. 그러면 여기에 car와 cdr을 적용한다. cbn-car는 s에 참값(#t)을 적용한다. (s #t)
+#+BEGIN_SRC scheme
+> (cbn-car (terms 3))
+1/9
+#+END_SRC
+
+cbn-car가 제대로 나왔다. 책의 예제는 여기까지다. 이제 지연된 계산을 이용해 문제를 더 풀어보자. cbn-cdr은 이미 지연된 계산을 내포하고 있다.
+#+BEGIN_SRC scheme
+> (cbn-cdr (terms 3))
+#<procedure>
+#+END_SRC
+
+계산을 시키면 다음과 같다(스트림 예제의 force나 마찬가지다).
+#+BEGIN_SRC scheme
+>(cbn-car (cbn-cdr (terms 3)))
+1/16 
+#+END_SRC
+
+이것은 다음 식과 마찬가지다.
+#+BEGIN_SRC scheme
+> ((cbn-cdr (terms 3)) #t)
+1/16
+#+END_SRC
+
+다시 한번 계산을 시켜 보자.
+#+BEGIN_SRC scheme
+> (cbn-cdr (cbn-cdr (terms 3)))
+#<procedure>
+> (cbn-car (cbn-cdr (cbn-cdr (terms 3))))
+1/25
+#+END_SRC
+
+다음 식과 같은 작용이다.
+#+BEGIN_SRC scheme
+> (((cbn-cdr (terms 3)) #f) #t)
+1/25
+#+END_SRC
+
+결국 이들은 문제를 풀려고 클로저를 만들어내고 적용하는 과정이다. 별 것이 아니다. 클로저를 만들고 필요할 때마다 계산한다. 마치 스트림의 원시형처럼 보인다(사실이기도 하다).
+
+아주 날카로운 독자들은 스트림을 바로 이해할 수 있을지도 모르나 필자의 경우는 이렇게 생각하는 편이 이해가 빨랐다. 그래서 call-by-name과 같이 쉬우면서도 어려운 개념은 이런 식으로 설명할 수 있게 되었다. 원 글에 같이 나오는 call-by-need도 비슷한 예제다. call-by-need는 불필요한 재계산을 피한다.
+
+call-by-name의 인자에 filter나 enumerate-interval 같은 함수를 포함시켜 코드를 짜도 접근 방식은 변하지 않는다. 상태를 가진 함수를 부르는 것뿐이다. 이제 비슷한 식들이 상당히 복잡해져도 독자들은 혼란스럽지 않을 것이다.
+
+스트림과 비슷한 문제들은 지연된 람다 함수를 한번 계산하고 나머지 계산 과정을 뒤로 미루는 접근법이다.
+
+** 다른 방법론들
+비슷한 문제에 대한 대안으로 스트림이 전부는 아니다. call/cc나 코루틴도 있으며 스트림으로도 가능하다.
+
+필자의 머리에 떠오르는 것으로는 유명한 same fringe 문제가 있는데 이것은 트리의 마지막 노드, 즉 이파리(leaf)들이 동일한지를 체크하는 문제다. 가지는 임의로 복잡해질 수 있지만 관심이 있는 것은 마지막 노드들이다. 이 문제는 앞서 설명한 스트림처럼 만들어 풀거나 더 고전적인 방법으로 트리를 일차원적인 리스트로 바꾸어 푸는 방법도 있다, 이 예제는 많은 스킴 문헌에 나온다. call/cc나 코루틴을 동원하여 푸는 방법도 있고 CPS(continuation passing style)로 푸는 방법도 있다. 이들은 모두 흐름 제어의 중요한 요소라는 것을 아는 일이 중요하다. 설명은 어렵지만 내용은 별다른 것이 없다. 다음과 같은 예제다.
+
+#+BEGIN_SRC scheme
+(same-fringe? '(1 (2 3)) '((1 2) 3))
+=>  #t
+
+(same-fringe? '(1 2 3) '(1 (3 2)))
+=>  #f
+#+END_SRC
+
+여러 가지 버전의 same fringe 문제는 지면상 다음회의 내용이다.

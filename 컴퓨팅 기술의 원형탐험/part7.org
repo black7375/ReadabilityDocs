@@ -1,0 +1,279 @@
+*  컴퓨팅 기술의 원형 탐험 Part 7 여러 가지 얼굴의 클로저
+:PROPERTIES:
+:TOC:      this
+:END:
+-  [[#들어가며][들어가며]]
+-  [[#클로저가-만들어지는-과정][클로저가 만들어지는 과정]]
+-  [[#클로저의-예][클로저의 예]]
+-  [[#함수를-만드는-함수][함수를 만드는 함수]]
+-  [[#후기][후기]]
+
+** 들어가며
+지난번에는 클로저를 간단히 소개했다. 스킴이나 리스프에서 클로저는 상태(state)를 갖고 있는 람다 함수다. 다른 언어들의 디자인에서 언어의 융통성과 표현 능력을 증가시킬 수 있는 방안으로 클로저를 도입하려는 시도가 있다. 자바스크립트나 루비는 클로저를 상당한 수준으로 지원하고 있으며 올해부터는 C++ 표준에서도 람다와 클로저를 지원하려고 몇 개의 중요한 프로토타입이 검토되고 있다. 자바도 어느 정도 확정된 모습이 나오고 있다(http://www.javac.info/).
+
+클로저는 객체(object)와 닮은 점이 있다. 객체가 C 언어로 번역되면 구조체와 비슷한 모양이 되겠지만 객체보다는 덜 비정형적인 클로저의 번역된 코드 원형은 아래와 비슷한 모양이 될 것이다(출처: http://www.jetcafe.org/jim/highlowc.html).
+
+#+BEGIN_SRC c
+/* In closure.h */
+typedef struct Closure Closure;
+struct Closure {
+    void *(*fn)(void *);
+    void *data;
+};
+
+inline void *
+appclosure(Closure *t)
+{
+    return (*t->fn)(t->data);
+}
+#+END_SRC
+
+이런 코드는 기계어로 구현해도 비슷한 모양이 된다. 인다이렉트 어드레싱을 이용하는 모습이니 포인터를 사용하는 C 코드와 비슷하다. 누가 프로그래밍을 해도 거의 닮은 모양을 만들어낼 것이다. 요점은 간단하다. 포인터로 함수와 데이터를 전하고 다시 함수와 데이터의 포인터를 돌려받는다. 원문을 읽고 실제로 C로 클로저 비슷한 것을 만들어 보면 재미있을 것 같다.
+
+Jim Larson은 위의 글 말고도 ‘An Introduction to Lambda Calculus and Scheme’이라는 제목의 간단한 강의록을 작성했다. 꽤 많이 알려진 글이며 앞부분에는 함수에 대한 예제가 나온다. 상당히 좋은 예제이기 때문에 글의 앞부분을 인용해 설명해 보자(클로저를 설명하기 위해 조금 변형해 보았다).
+
+함수형 언어의 함수 호출 역시 호출 후 아무것도 되돌리지 않고 또 되돌아오지 않는다면 goto와 다를 바 없다. 되돌린다고 해도 goto와 다를 바가 없다. ‘다음 할 일’은 이런 일을 생각해보는 하나의 화두다. 스킴의 CPS는 이렇게 생각해보면 그다지 신기한 것이 아니다. 함수가 언제나 리턴하는 것이 아니라는 생각을 한다면 CPS는 별다른 것이 아니다.
+
+** 클로저가 만들어지는 과정
+어떤 물건을 초콜릿으로 덮는(chocolate-covering) 함수를 생각해 보자. 함수는 입력에 대해 아래에 보이는 것처럼 출력한다.
+
+#+BEGIN_SRC
+peanuts	->	chocolate-covered peanuts
+rasins	->	chocolate-covered rasins
+ants	->	chocolate-covered ants
+#+END_SRC
+
+이런 일을 하는 함수를 람다로 다음과 같이 표시할 수 있다.
+
+#+BEGIN_SRC
+Lx.chocolate-covered x
+#+END_SRC
+
+L은 람다식을 나타내고 인자 x를 갖는다고 하자. 이제 인자 x에 peanuts를 대입하면 다음과 같다.
+
+
+#+BEGIN_SRC
+(Lx.chocolate-covered x)peanuts -> chocolate-covered peanuts
+#+END_SRC
+
+초콜릿으로 덮인 땅콩이 나온 것이다. 그런데 함수는 다른 람다식을 적용한 결과로도 만들어낼 수 있다. 이제 ‘덮는 함수를 만들어 내는’(covering function maker) 람다식을 생각해보자.
+
+#+BEGIN_SRC
+Ly.Lx.y-covered x
+#+END_SRC
+
+이제는 초콜릿뿐만 아니라 캐러멜을 덮는 함수를 만들 수 있다.
+#+BEGIN_SRC
+(Ly.Lx.y-covered x)caramel -> Lx.caramel-covered x
+  (Lx.caramel-covered x)peanuts -> caramel-covered peanuts
+#+END_SRC
+
+첫 번째 식에서 y는 캐러멜로 치환되었다. 그러면서 캐러멜로 덮는 람다식 Lx.caramel-covered x가 나타났다. 이 식에 peanuts를 적용하면 캐러멜로 덮인 땅콩이 나온다. Lx.caramel-covered x에서 caramel은 일종의 상태라고 볼 수 있다. ‘덮는 함수를 만드는’ 식에 caramel을 적용한 결과 만들어진 상태를 갖고 있다. 물론 초콜릿이나 다른 재료를 적용하는 것도 상태를 만드는 작업이다.
+
+상태를 갖고 있는 람다 함수를 클로저라고 한다면 독자들은 지금 클로저가 만들어지는 과정을 본 것이다. 클로저는 계산(evaluate)되어 caramel과 같은 bound variable을 갖는 함수를 말한다. 계산된 bound variable이 상태(state)인 셈이다.
+
+람다 함수는 다른 함수의 입력으로도 사용될 수 있다. 이를테면 "apply-to-ants" 같은 함수를 생각할 수 있다.
+
+#+BEGIN_SRC
+Lf.(f)ants
+#+END_SRC
+
+이제 초콜릿으로 덮는 함수를 "apply-to-ants"에 적용해 보자:
+
+#+BEGIN_SRC
+(Lf.(f)ants)Lx.chocolate-covered x
+  -> (Lx.chocolate-covered x)ants
+  -> chocolate-covered ants
+#+END_SRC
+
+인자 f가 Lx.chocolate-covered x로 치환되었고 이 함수에 ants가 재차 적용되었다. 그러면 chocolate-covered ants가 된다. 여기까지 이해했다면 람다의 많은 것을 이해한 셈이다. 반드시 초콜릿으로 덮을 이유도 없어진다. 앞에서 (Ly.Lx.y-covered x)caramel ->Lx.caramel-covered x였으니 (Lf.(f)ants) ((Ly.Lx.y-covered x)caramel)은 caramel-covered ants가 될 수 있다.
+
+특별히 어렵게 생각할 것이 없다. 람다식은 인자를 치환하는 기능을 수행하고 클로저는 한번 계산되어 치환이 일어난(상태를 갖는) 람다식이다. 기계적인 과정인 것이다.
+
+** 클로저의 예
+지난번에 설명한 스킴 클로저의 예 가운데 다음과 같은 함수가 있었다.
+#+BEGIN_SRC scheme
+(define (derivative f dx)
+  (lambda (x) (/ (- (f (+ x dx)) (f x)) dx)))
+#+END_SRC
+
+이 식은 다음과 같다. derivative는 함수의 이름을 정의한 것이다.
+#+BEGIN_SRC scheme
+(define derivative 
+  (lambda(f dx)
+    (lambda (x) (/ (- (f (+ x dx)) (f x)) dx))))
+#+END_SRC
+
+이 식은 앞서 설명한 패턴인 Ly.Lx.y-covered x와 같은 패턴이다. 앞서 (Ly.Lx.y-covered x)caramel -> Lx.caramel-covered x에서 캐러멜을 덮는 함수를 만든 것처럼 람다식에 f dx가 주어지고 그 다음 람다식에 x를 적용하는 순서가 남아있다. 이제 f에 sqrt를, dx에 0.001을 적용하여 클로저를 만들 수 있다.
+
+#+BEGIN_SRC scheme
+(derivative sqrt 0.001) --> #closure 또는 (lambda (a1)...)
+(((derivative sqrt 0.001) ) 4) --> #i0.24998437695300524
+#+END_SRC
+
+위의 식은 클로저이며 클로저에 이름을 붙일 수 있다.
+
+#+BEGIN_SRC scheme
+(define drv1 (derivative sqrt 0.001))
+#+END_SRC
+
+이제 drv1은 중간값을 가진 함수다. 값들을 적용해 볼 수 있다.
+
+#+BEGIN_SRC scheme
+(drv1 4) --> #i0.24998437695300524
+(drv1 5) --> #i0.22359561852791643
+#+END_SRC
+
+자바스크립트에서는 x를 인자로 하는 함수를 되돌린다.
+
+#+BEGIN_SRC js
+function derivative(f, dx) {
+    return function(x) {
+        return (f(x + dx) - f(x)) / dx;
+    };
+}
+#+END_SRC
+
+위의 식을 다음과 같이 적을 수도 있다.
+#+BEGIN_SRC js
+function derivative( f, dx)
+{
+    var deriv = function(x)
+    { 
+        return (f(x + dx) - f(x)) / dx;
+    }
+        return deriv;
+}
+
+var drv1 = derivative (Math.sin 0.001)
+
+var drv1 = makeDerivative( Math.sin, 0.001);
+drv1(0)   ~~> 1 
+drv1(pi/2)  ~~> 0
+
+#+END_SRC
+
+자바스크립트는 f와 dx를 중간값으로 갖는 함수를 리턴하고 drv1은 f와 dx의 값을 계속 간직한다. 변수 f와 dx는 derivative가 수행된 다음에도 drv1에 살아남아 있다. 그 다음 함수는 drv1을 다시 정의할 필요가 없다.
+
+위키백과에는 책이 얼마 이상 팔리면 베스트셀러로 분류하는 자바스크립트 함수 예제가 있다. filter를 사용했다.
+
+#+BEGIN_SRC js
+function bestSellingBooks(threshold) {
+    return bookList.filter(
+        function(book) { return book.sales >= threshold; }
+#+END_SRC
+
+이런 접근 방식은 필요한 함수를 동적으로 만들 수 있어 편리하다. 함수를 몇 차례 적용하는 것으로 훨씬 복잡한 함수를 만들 수 있으며 편리하기도 하지만 경우에 따라 메모리를 많이 차지하는 문제가 발생할 수 있다. 내부의 상태변수가 계속 남아있기 때문이다.
+
+** 함수를 만드는 함수
+이제 클로저의 용도를 생각해 볼 수 있겠다. 우선 함수를 만들어내는 용도에 알맞다. 앞에서 설명한 ‘초콜릿으로 덮는’ 함수와 비슷한 것들을 생각해 볼 수 있다. 이 과정을 몇 번 거듭하면 매우 복잡한 함수를 동적으로 쉽게 만들 수 있다. 고차(higher order) 함수를 만드는 방법이기도 하다(SICP 1장부터 나온다).
+
+그 다음은 일종의 OOP 같은 프로그래밍을 생각해 볼 수 있다. 먼저 SICP 3장의 예를 보자. 예제는 같지만 설명을 클로저의 관점에서 해보기로 한다.
+#+BEGIN_SRC scheme
+(define (make-withdraw balance)
+  (lambda (amount)
+    (if (>= balance amount)
+        (begin (set! balance (- balance amount))
+               balance)
+        "Insufficient funds")))
+#+END_SRC
+
+은행 계좌를 표현하는 람다식이다. 앞의 ‘초콜릿으로 덮는’ 함수와 비슷한 모양이지만 set!이라는 새로운 함수가 나타났다. 여기서는 변수의 값을 지정하는 역할을 한다. 은행의 잔고(balance)는 잔고에서 일정액(amount)을 뺀 값으로 새롭게 지정(assign)된다. 그 앞의 begin은 (begin ... )처럼 몇 개의 식을 차례로 계산할 때 사용한다. 위의 make-withdraw에서는 은행 잔고를 계산한 후 이 값을 리턴한다.
+
+앞에서 본 것처럼 make-withdraw는 일종의 클로저다. 그래서 (make-withdraw 100)을 계산하면 상태변수를 갖는 클로저가 나타나고 이 클로저를 w1과 w2로 정의한다. 그러면 두 개의 w1, w2 클로저는 다른 상태를 갖는다.
+
+#+BEGIN_SRC scheme
+(define W1 (make-withdraw 100))
+(define W2 (make-withdraw 100))
+(W1 50)
+50
+(W2 70)
+30
+(W2 40)
+"Insufficient funds"
+(W1 40)
+10
+#+END_SRC
+
+이제 make-account를 조금 더 확장해 보자. 위의 예에서는 돈을 인출(with-draw)하는 함수만 있는데 돈을 적립(deposit)하는 함수도 만들어 보자. 다시 말하지만 define은 람다식이다. 이를테면 (define (withdraw amount) (...))는 (define withdraw (lambda (amount) (...))와 같다. 그러니까 아래 식은 보기보다 많은 람다로 이루어졌다.
+
+#+BEGIN_SRC scheme
+(define (make-account balance)
+  (define (withdraw amount)
+    (if (>= balance amount)
+        (begin (set! balance (- balance amount))
+               balance)
+        "Insufficient funds"))
+  (define (deposit amount)
+    (set! balance (+ balance amount))
+    balance)
+  (define (dispatch m)
+    (cond ((eq? m 'withdraw) withdraw)
+          ((eq? m 'deposit) deposit)
+          (else (error "Unknown request -- MAKE-ACCOUNT"
+                       m))))
+  dispatch)
+#+END_SRC
+
+이제 acc라는 새로운 객체 비슷한 것을 만들어보자. acc는 상태를 갖는 클로저다. 이 클로저로 인스턴스 만들기에 메서드 호출을 합친 것과 비슷한 일을 할 수 있다.
+
+#+BEGIN_SRC scheme
+(define acc (make-account 100))
+((acc 'withdraw) 50) ->50
+((acc 'withdraw) 60) ->"Insufficient funds"
+((acc 'deposit) 40)0 ->90
+((acc 'withdraw) 60) ->30
+#+END_SRC
+
+acc에 메시지 'withdraw나 ‘deposit을 지정하여 내부의 withdraw와 deposit을 불러냈다. 이 일은 dispatch 프로시저에서 정한다. 바로 앞의 예보다는 정교하게 변한 것이다. 그리고 acct2라는 새로운 클로저를 만들 수 있다. 내부의 상태 변수는 서로 독립적이다.
+
+#+BEGIN_SRC scheme
+(define acc2 (make-account 100))
+#+END_SRC
+
+여기에 앞에서 한 것과 같은 조작을 독립적으로 할 수 있다.
+
+초콜릿으로 덮는 함수와 관련하여 설명하면 한 가지만 더 설명하면 될 것 같다. dispatch 프로시저다. SICP에서 메시지 패싱(message passing) 방식이라는 것인데 사실 별다른 것이 없다. 특수한 함수가 아니다. 일종의 코딩 방법이다(지금 바로 이해가 필요한 것은 아니지만 이해하려는 독자들을 위해 덧붙인다. 클로저 이해에는 지장이 없다).
+
+#+BEGIN_SRC scheme
+(define (dispatch m)
+  (cond ((eq? m 'withdraw) withdraw)
+        ((eq? m 'deposit) deposit)
+        (else (error "Unknown request -- MAKE-ACCOUNT"
+                     m))))
+dispatch)
+#+END_SRC
+
+위 코드는 사실상 다음과 같다.
+#+BEGIN_SRC scheme
+(lambda (m)
+  (cond ((eq? m 'withdraw) withdraw)
+        ((eq? m 'deposit) deposit)
+        (else (error "Unknown request -- MAKE-ACCOUNT"
+                     m))))
+)
+#+END_SRC
+
+단순한 람다식으로 만약 입력이 ((acc 'withdraw) 50)이라면 그 다음의 50이라는 값을 전해주기 위한 방법이다. 람다식의 간결한 계산법에 예외가 생긴 것이 아니다. 자세한 내용은 책과 비교해 보기 바란다.
+
+특별한 것이 없다고 생각하는 독자들이 많을 것이다. 정말로 클로저는 특별한 게 없다. 그래도 많은 내용을 적어 보았으니 Larson이 적어 놓은 클로저의 응용 예제를 한번 살펴보는 것도 좋겠다.
+
+#+BEGIN_SRC scheme
+(define (make-object sv1 sv2 ... svN)
+  (lambda (mesg)
+    (cond ((eq? mesg (quote method1)) (lambda args1 body1))
+          ((eq? mesg (quote method2)) (lambda args2 body2))
+          ...
+          ((eq? mesg (quote methodM)) (lambda argsM bodyM))
+          (else (error "Unknown method for object")))))
+
+(define (method1 obj args1) ((obj (quote method1)) args1))
+#+END_SRC
+
+앞의 은행 계좌 예제와 비슷한 확장판이다. 차이가 있다면 위의 코드에서 메시지를 받은 프로시저는 객체처럼 그 메시지를 처리할 프로시저를 내놓다는 점이다(물론 처리하는 함수도 생각할 수 있다). 각각의 프로시저는 메시지를 받아 계산(evaluate)을 일으키면서 만들어질 당시의 상태변수를 갖고 있다. make-object 함수를 여러 번 부르는 것으로 인스턴스 비슷한 프로시저가 여러 개 만들어지고 클래스 구조와 상속 같은 것도 메시지 전달을 통해 만들 수 있다. 고차 함수를 사용함으로써 객체 지향 코드를 자연스러운 방법으로 만들 수 있다.
+
+** 후기
+
+리스프와 OOP의 관계 설명은 Peter Norvig의 PAIP(『Paradigms of Artificial Intelligence Programming: Case Studies in Common Lisp』) 13장에 잘 요약되어 있다. 클로저에 대해서도, 또한 CLOS(Common LISP Object System)에 대해서도 설명하고 있다. 13장의 앞부분은 은행 계좌 예제와 비슷한 리스프 코드를 OOP와 비교하면서 시작한다.
+
+오리지널 람다 페이퍼 중 하나인 「Lambda: The Ultimate Declarative」에서는 리스프로 객체 지향 프로그래밍을 하는 방법을 다루고 있다. 글의 결론은 ‘클로저는 액터와 같다(Closure=Actor)’이다.
