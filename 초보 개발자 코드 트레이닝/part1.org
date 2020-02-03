@@ -1,0 +1,148 @@
+* 초보 개발자 코드 트레이닝 Part 1: 다언어주의
+
+#+BEGIN_QUOTE
+“세계는 나의 한계이며, 나의 한계는 언어의 한계이다.”     - 비트겐슈타인
+#+END_QUOTE
+
+최근 그 어느 때보다도 다양한 언어에 대한 관심이 높아지고 있습니다. 자바는 JRuby, 그루비(Groovy), 스칼라(Scala) 등을 통해 언어를 넘어 플랫폼으로 발전하고 있고, 닷넷은 CLR(Common Language Runtime), DLR(Dynamic Language Runtime)을 통해 다양한 언어를 지원하고 있습니다. 또한 동적 언어와 함수형 언어에 대한 관심도 뜨겁습니다.
+
+이번 문제는 단순합니다. 초보자 책에서도 흔히 볼 수 있는 도형 그리기 문제입니다. 하지만 익숙한 문제를 익숙하지 않은 언어, 익숙하지 않은 방법을 사용해 해결해 보면 어떨까요? 자바, C#, 루비, 파이썬, 자바스크립트, 그루비, Erlang, 스칼라, ML, 해스켈(Haskell), 리스프, Io, 펄 등 다양한 언어를 이용해 다양한 방법으로 프로그램을 작성할 수 있을 것입니다.
+
+- 의도적으로 디자인 패턴을 마음껏 사용해 보는 것은 어떨까요?
+- 루비 등의 오리 타입(Ducking Type)을 한번 써보세요. 타입으로서 인터페이스는 과연 어떤 의미를 지니고 있는 것일까요?
+- 함수형 언어를 이용해 작성하면 프로그램이 어떤 모습이 될까요?
+- 자바스크립트로는 어떻게 프로그램을 구조화할 수 있을까요, 클래스 상속을 사용할까요, 프로토타입 기반 상속을 사용해 볼까요?
+
+제가 자바로 작성해 본 간단한 예제가 있습니다. 어떤 언어, 어떤 방법도 좋습니다. 다양한 언어의 상상력에 여러분의 상상력을 더해 주세요.
+
+마지막으로 여러분이 작성한 코드를 공유해 주세요. 블로그에 작성한 코드를 정리한 후, http://innolab.tistory.com/1173513751 에 댓글이나 트랙백을 남겨주시거나 이메일(dwkorea@kr.ibm.com)로 보내주시면 됩니다. 창의적인 코드를 보내주신 분에게는 일정 기간에 한 번씩 선물도 드릴 예정입니다.
+
+*Listing 1. Shape.java*
+#+BEGIN_SRC java
+package codekata;
+
+public interface Shape {
+    public void draw();
+    public void moveTo(int x, int y);
+    public void moveBy(int dx, int dy);
+}
+#+END_SRC
+
+*Listing 2. AbstractShape.java*
+#+BEGIN_SRC java
+package codekata;
+
+public abstract class AbstractShape implements Shape{
+    protected int x;
+    protected int y;
+
+    public void moveTo(int x, int y){
+        this.x = x;
+        this.y = y;
+    }
+
+    public void moveBy(int dx, int dy){
+        this.x += dx;
+        this.y += dy;
+    }
+
+    public String toString(){
+        return "[X : " + x + " Y : " + y + "]";
+    }
+}
+#+END_SRC
+
+*Listing 3. Rectangle.java*
+#+BEGIN_SRC java
+public class Rectangle extends AbstractShape{
+    private int width;
+    private int height;
+
+    public Rectangle(int x, int y, int width, int height){
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+
+    @Override
+    public void draw() {
+        System.out.println("Drawing Rectangle - " + this.toString());
+    }
+
+    public String toString(){
+        return super.toString() + " [Width : " + this.width + ", Height : " + this.height + "]";
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+}
+#+END_SRC
+
+*Listing 4. Circle.java*
+#+BEGIN_SRC java
+Package codekata;
+
+public class Circle extends AbstractShape{
+    private int radius;
+
+    public Circle(int x, int y, int radius){
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+    }
+
+    @Override
+    public void draw() {
+        System.out.println("Drawing Circle - " + this.toString());
+    }
+
+    public String toString(){
+        return super.toString() + " [Radius - " + this.radius + "]";
+    }
+
+    public int getRadius() {
+        return radius;
+    }
+
+    public void setRadius(int radius) {
+        this.radius = radius;
+    }
+}
+#+END_SRC
+
+*Listing 5. Test.java*
+#+BEGIN_SRC java
+Package codekata;
+
+public class Test {
+    private static void doPolymorphicOp(Shape shape){
+        shape.draw();
+        shape.moveBy(10, 20);
+        shape.draw();
+        shape.moveTo(100, 130);
+        shape.draw();
+    }
+
+    public static void main(String[] args) {
+        Shape[] shapes = new Shape[]{new Rectangle(0, 0, 10, 15), new Circle(10, 10, 5)};
+
+        for (Shape shape : shapes) {
+            doPolymorphicOp(shape);
+        }
+    }
+}
+#+END_SRC

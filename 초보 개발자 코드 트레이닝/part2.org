@@ -1,0 +1,170 @@
+* 초보 개발자 코드 트레이닝 Part 2: 알고리즘과 성능
+:PROPERTIES:
+:TOC:      this
+:END:
+-  [[#들어가며][들어가며]]
+-  [[#퀴즈-1-프로시저-both-를-완성해-봅시다][퀴즈 1. 프로시저 Both 를 완성해 봅시다.]]
+-  [[#퀴즈-2-수행-속도를-높인-fasteither-를-만들어봅시다][퀴즈 2. 수행 속도를 높인 fastEither 를 만들어봅시다.]]
+-  [[#퀴즈-3-issubstring-을-작성해-봅시다][퀴즈 3. isSubstring 을 작성해 봅시다.]]
+-  [[#퀴즈-4-프로시저-match-를-작성해-봅시다][퀴즈 4. 프로시저 match 를 작성해 봅시다.]]
+
+** 들어가며
+알고리즘은 아랍의 수학자 알콰리즈미 ( al-Khw ā rizm ī ) 의 이름에서 유래한 것으로 유한한 단계를 통해 문제를 해결하기 위한 절차나 방법을 말합니다. 쉽게 말해 어떤 문제를 해결하기 위해 사용 가능한 방법이란 뜻이죠. 여러분이 어떤 문제를 프로그래밍 언어를 통해 해결해 냈다면, 그 문제를 해결할 수 있는 한 가지 알고리즘 ( 문제 해결을 위한 절차 ) 을 찾아냈다고 보셔도 됩니다.
+
+** 퀴즈 1. 프로시저 Both 를 완성해 봅시다.
+우선 한 가지 문제를 해결해 볼까요? Listing 1 은 두 ArrayList 데이터 내에서 공통 원소만을 뽑아 모으는 프로시저, either 를 자바 언어를 이용해 만든 것입니다. 만일 두 ArrayList 내의 모든 원소를 합쳐 모으는 프로시저, both 가 필요하다면 어떻게 하면 좋을까요?
+
+*Listing1. FirstQuizSet*
+#+BEGIN_SRC java
+import java.util.*;
+public class FirstQuizSet {
+    public static ArrayList both(ArrayList xs, ArrayList ys) {
+        // TODO: 이 곳을 채우는 문제입니다.
+    }
+
+    public static ArrayList either(ArrayList xs, ArrayList ys) {
+        ArrayList eitherList = new ArrayList();
+        Object y = null; Iterator elems = ys.iterator();
+        while (elems.hasNext()) {
+            y = elems.next();
+            if (xs.contains(y)) eitherList.add(y);
+        }
+        return eitherList;
+    }
+
+    public static ArrayList toArrayList(int[] xs) {
+        ArrayList ys = new ArrayList();
+        for (int i = 0; i < xs.length; i++) ys.add(new Integer(xs[i]));
+        return ys;
+    }
+
+    public static void main(String[] args) {
+        int[] xVec = { 1, 3, 4, 5, 6, 9, 7 };
+        int[] yVec = { 4, 5, 8, 9, 10, 15, -1 };
+        ArrayList xs = toArrayList(xVec); ArrayList ys = toArrayList(yVec);
+        System.out.println( both(xs, ys) ); System.out.println( either(xs, ys) );
+    }
+}
+#+END_SRC
+
+*Listing 1 의 실행 결과 예시*
+#+BEGIN_SRC
+[1, 3, 4, 5, 6, 9, 7, 8, 10, 15, -1] ß both 의 실행 결과
+[4, 5, 9] ß either 의 실행 결과
+#+END_SRC
+
+첫 번째 퀴즈인 both 를 해결하셨나요? 실행 결과는 제대로 나오구요? 축하드립니다.
+
+** 퀴즈 2. 수행 속도를 높인 fastEither 를 만들어봅시다.
+저는 부산 토박이라 서울에서 차를 몰고 어디로 이동해야 하는 상황이라면 항상 네비게이션의 힘을 빌립니다. 그런데 제가 사용하는 네비게이션은 항상 큰길 중심으로 길을 찾아줘서, 지름길을 알고 나면 그 동안 다녔던 길이 비효율적이였던 적이 많더군요. 20 분이면 도착할 거리를 50 분이나 걸려서 다녔던 적도 있습니다.
+
+이처럼 목적지를 향해 가는 길은 하나만 있는 것이 아닙니다. 여러 가지 대안이 존재하기 마련이고, 각 대안마다 나름대로 장점과 단점이 있습니다. 그러므로 단지 그 문제를 해결했다고 해서 만족하는 것은 올바른 프로그래머의 자세가 아니라고 생각합니다. 좀 더 고급 개발자로 올라서려면 원하는 품질을 확보했느냐를 따져보는 습관이 중요합니다.
+
+이번 문제에서 요구되는 품질이 성능이라고 가정해 봅시다. 성능을 중요하게 여기는 문제라면, 위에서 샘플 코드로 소개한 either 프로그램은 만족스럽지 않은 답입니다. 샘플 코드에서 xs 와 ys 가 이미 오름차순으로 정렬되어 있다고 가정하면 훨씬 빠른 프로시저를 만들 수 있기 때문입니다.
+
+아래는 이 아이디어에 바탕을 두고 both 를 개선한 fastBoth 입니다. 같은 방식으로 fastEither 도 한번 만들어보세요. 물론 더 빨리 실행될 수 있도록 하는 아이디어가 생각났다면, 그 방식으로 구현해도 좋습니다.
+
+*Listing 2. FastEitherQuiz*
+#+BEGIN_SRC java
+public class FastEitherQuiz {
+    public static ArrayList fastEither(ArrayList xList, ArrayList yList) {
+        // TODO: 이곳을 채우는 문제입니다.
+    }
+
+    public static ArrayList fastBoth(ArrayList xList, ArrayList yList) {
+        ArrayList bothList = new ArrayList();
+        final int xSize = xList.size(); final int ySize = yList.size();
+        Comparable x, y;
+        int order; int xpos, ypos;
+        xpos = ypos = 0;
+        while ( xpos < xSize && ypos < ySize ) {
+            x = (Comparable)xList.get(xpos); y = (Comparable)yList.get(ypos);
+            order = x.compareTo(y);
+            if (order == 0) {
+                bothList.add(x); // or y
+                ++xpos; ++ypos;
+            } else if (order < 0) {
+                bothList.add(x); ++xpos;
+            } else {
+                bothList.add(y); ++ypos;
+            }
+        }
+        if (ypos == ySize) bothList.addAll( xList.subList(xpos, xSize) );
+        else bothList.addAll( yList.subList(ypos, ySize) );
+        return bothList;
+    }
+
+    public static void main(String[] args) {
+        int[] xVec = { 1, 3, 4, 5, 6, 9, 7 };
+        int[] yVec = { 4, 5, 8, 9, 10, 15, -1 };
+        Collections.sort( xs ); Collections.sort( ys );  // 먼저 정렬을 한 다음,
+        System.out.println( xs ); System.out.println( ys );
+        System.out.println(fastBoth(xs,ys)); System.out.println(fastEither(xs,ys));
+    }
+}
+#+END_SRC
+
+*Listing 2 의 실행 결과 예시*
+#+BEGIN_SRC
+[1, 3, 4, 5, 6, 7, 9] ß xs 의 내용
+[-1, 4, 5, 8, 9, 10, 15] ß ys 의 내용
+[-1, 1, 3, 4, 5, 6, 7, 8, 9, 10, 15] ß fastBoth 의 결과
+[4, 5, 9] ß fastEither 의 결과
+#+END_SRC
+
+*Listing 3. 작성한 코드의 수행속도 계산*
+#+BEGIN_SRC java
+long start = System.currentTimeMillis();
+// 시간을 잴 코드
+long end = System.currentTimeMills();long time = end-start;
+#+END_SRC
+
+이러한 성능 최적화를 수행할 때 주의해야 할 점이 몇 가지 있습니다.
+
+1. 최적화가 필요하다고 확인되지 않았다면 코드를 최적화하지 않는 것이 좋습니다. 최적화에 투입하는 개발자의 노력 역시 중요한 자원이기 때문입니다. 그리고 무작정 “ 이 부분이 느린 것 같으니까, 이렇게 고치면 빨라질 거야 ” 라는 막연한 생각으로 덤벼 들면 안 됩니다. 직접 수행 시간을 확인하거나, 프로파일러를 통해 성능 개선이 필요한 부분을 점검하고, 성능 개선 목표를 정하고, 적용한 기법이 기대한 효과를 얻어 내는지 확인해야 합니다.
+2. 최적화를 매우 신중하게 끝맺지 못했다면 버그가 있을 수 있습니다. 그러므로 수정한 코드가 정상적으로 동작함을 반드시 테스트해야 합니다. 늦더라도 정확하게 동작하는 코드가, 빠르면서 버그 있는 코드보다 나은 법입니다.
+3. 무작정 빠른 코드를 만들기 위해 전체적인 설계를 깨트리는 일이 있어선 안 됩니다. 사소한 성능 이득을 취하기 위해, 설계 과정에서 고치거나 다루기 쉬운 구조로 잡아놓은 프로그램의 틀을 스스로 깨버려야 한다면, 잃는 것과 얻는 것을 면밀히 검토해야만 할 것입니다. 이런 불행을 피하기 위해서는 설계를 튼튼히 하는 수 밖에 없습니다. 개발 초기에 프로그램 설계나 자료구조, 알고리즘 선택에 집중하게 되면, 정작 코드를 더 빠르게 돌아가도록 고쳐쓸 때, 훨씬 더 쉽게 적은 비용으로 코드 수정이 가능하게 됩니다.
+4. 유행하는 기법이나 잘 알려진 속설에 의존하기보다, 스스로 주어진 환경에서 검증된 결과를 믿어야 합니다. 비어있는 메서드나 죽은 코드 없애기, 압축 연산자 사용하기, 반복문에서 불변 코드 빼내기, 반복문 펼치기, String 대신 StringBuffer 사용하기, 어떤 수준의 컴파일 최적화 옵션 사용하기 등 잘 알려진 최적화 기법들이 과연 내가 사용하는 환경에서도 적용될까요? 어떤 기법들은 컴파일러가 알아서 해주는 것을 불필요하게 작업한 것도 있을 것이고, JVM 기술이 발전하면서 오히려 역효과가 나는 것도 있으며, 언어의 버전이 올라가면서 더 나은 최적화 기법이 고안된 경우도 있을 겁니다. 결국 제대로 된 최적화 작업을 수행하기 위해서는, 유연하고, 확장성이 쉬운 구조로 프로그램의 틀을 만드는 큰 관점의 시각과 런타임 최적화 원리나 VM 의 클래스 로딩 절차, 각종 최적화 기법과 그 적용 범위 등을 깊이 있게 이해하는 작고 깊이있는 관점의 시각이 균형감있게 제공되어야 할 것 같습니다.
+
+이처럼 프로시저나 함수 수준에서 해결해야 할 문제라고 하더라도, 성능이라는 한 가지 주제가 더해지면 많은 생각을 하게 되는 문제로 바뀝니다. 데이터나 객체 수준으로 추상화 수준이 올라가고, 고려해야 할 품질 속성이 더 많아지면 그 복잡성이란 이루 말할 수 없겠죠? 그래서 프로그래머란 직업이 평생 학습과 훈련을 반복해야 하는 고된 전문직이라 말할 수 있는 게 아닐까요?
+
+비슷한 유형의 퀴즈 두 개를 더 풀어보는 것으로 이번 연재를 마무리하겠습니다.
+
+** 퀴즈 3. isSubstring 을 작성해 봅시다.
+세 번째 퀴즈는 두 개의 배열을 받아 왼쪽 배열에 들어있는 문자열이 오른쪽 배열에 포함되어 있는지 검사하는 프로그램, isSubstring 을 작성하는 것입니다.
+
+*Listing 4. PatternTest*
+#+BEGIN_SRC java
+public class PatternTest {
+    public static boolean isSubstring(char[] left, char[] right) { ... }
+    public static void main(String[] args) {
+        char[] first = { ’a’, ’b’, ’c’ };
+        char[] second = { ’a’, ’c’, ’b’, ’c’};
+        char[] third = { ’a’, ’a’, ’b’, ’c’};
+        isSubstring( first, second ); // false
+        isSubstring( first, third ); // true
+    }
+}
+#+END_SRC
+
+** 퀴즈 4. 프로시저 match 를 작성해 봅시다.
+네 번째 퀴즈는 문자열이 들어있는 배열을 받아 열고 닫는 괄호 문자가 짝이 맞는지 검사하는 프로시저 match 를 작성하는 것입니다. 괄호 이외의 문자는 무시하도록 합니다.
+
+*Listing 5. MatchTest*
+#+BEGIN_SRC java
+public class MatchTest {
+    public static boolean match(char[] cs) { ... }
+    public static void main(String[] args) {
+        char[] first = { ’(’, ’[’, ’<’, ’{’, ’}’, ’>’, ’]’, ’)’ };
+        char[] second = { ’(’, ’[’, ’<’, ’{’, ’>’, ’}’, ’]’, ’)’ };
+        char[] third = { ’(’, ’a’, ’c’, ’)’, ’[’, ’{’, ’}’, ’]’ };
+        match(first); // yes
+        match(second); // no
+        match(third); // yes
+    }
+}
+#+END_SRC
+
+자신이 알고 있는 언어의 특성을 마음껏 발휘해 다양한 해답을 만들어 보는 것도 흥미로울 것 같습니다. C 나 리스프 (LISP), 파이썬, 자바스크립트, Haskell, 펄 (Perl), C#, 자바 등이 그 대안이 될 수 있겠죠? 두 가지 이상의 언어를 알고 있다면 두 개의 문제를 각각 다른 언어로 해결하고, 그 언어가 가지는 표현력과 특징이 문제를 해결하는 데 어떤 영향을 나에게 끼치고 있는지를 실험해 보기 바랍니다. 다양한 언어를 다룸으로써 그 언어가 제공하는 패러다임을 경험한 만큼 내 사고가 유연해진 것을 느낄 수 있을 겁니다.
+
+마지막으로 여러분이 작성한 코드를 공유해 주세요. 블로그에 작성한 코드를 정리한 후, 제 블로그에 댓글이나 트랙백 (http://seal.tistory.com/trackback/150) 을 남겨주시거나 이메일 (dwkorea@kr.ibm.com) 로 보내주시면 됩니다. 창의적인 코드를 보내주신 분에게는 일정 기간에 한 번씩 선물도 드릴 예정입니다. 적극적인 참여로 한걸음씩 같이 발전해봅시다.

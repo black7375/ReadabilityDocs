@@ -1,0 +1,163 @@
+* 초보 개발자 코드 트레이닝 Part 3: 데이터 추상화
+:PROPERTIES:
+:TOC:      this
+:END:
+-  [[#추상-데이터-타입과-클래스][추상 데이터 타입과 클래스]]
+-  [[#퀴즈-1-작성된-명세에-따라-유리수를-완성하고-테스트해-봅시다][퀴즈 1. 작성된 명세에 따라 유리수를 완성하고 테스트해 봅시다.]]
+-  [[#퀴즈-2-데이터-추상화-개념을-객체지향-영역까지-확장해-현실-세계를-모델링해-봅시다][퀴즈 2. 데이터 추상화 개념을 객체지향 영역까지 확장해 현실 세계를 모델링해 봅시다.]]
+-  [[#도전-과제-자료구조를-완성하거나-즐겨보는-드라마를-프로그래밍의-세계로-들여놓기][도전 과제. 자료구조를 완성하거나 즐겨보는 드라마를 프로그래밍의 세계로 들여놓기]]
+
+** 추상 데이터 타입과 클래스
+복합 데이터(compound data)란 여러 개의 저수준 데이터를 하나로 결합한 것을 말합니다. 복합 데이터는 크게 두 가지 관점으로 바라볼 수 있는데, (1)필수적인 연산과 그 의미를 기술하는 What의 관점과 (2)데이터의 구조와 처리 과정, 즉 어떤 자료 구조와 어떤 알고리즘을 사용해 구현할 것인지를 다루는 How의 관점이 그것이죠. What의 관점은 추상적이지만 How의 관점은 구체적입니다. 데이터 추상화란 복합 데이터의 추상적 관점을 구체적 관점보다 우선적으로 하는 프로그래밍의 기본 원칙을 뜻합니다.
+
+데이터 타입(data type)은 "A collection of objects and a set of operations that act on those objects"라고 정의할 수 있습니다. 데이터 추상화를 달성하려면 그 표현을 적용되는 연산을 중심으로 구문적 요소와 의미론적 요소로 분리해 명세(specification)를 작성하는 것이 중요한데, 구현에 관한 상세 없이 What의 관점으로 기술된 데이터 타입을 추상 데이터 타입(abstract data type)이라고 부릅니다.
+
+[[https://user-images.githubusercontent.com/25581533/73697885-0dd96580-4723-11ea-86aa-70343668bbef.png]]
+
+*그림 1. 추상 자료형*
+
+데이터 추상화를 위한 명세는 일반적으로 다음과 같이 정의합니다. 명세에서 드러나듯이 어떤 데이터 타입은 어떤 연산(operation)을 지원하느냐에 따라 정의됩니다.
+
+*Listing 1. 데이터 추상화 명세를 위한 템플릿(Template for a specification of a data abstraction)*
+#+BEGIN_SRC
+dname = data type is % list of operations
+Overview
+% an overview of the data abstraction goes here
+Operations
+% a specification for each operation goes here
+end dname
+#+END_SRC
+(출처: Abstraction and Specification in Program Development", The MIT Computer Science Series)
+
+** 퀴즈 1. 작성된 명세에 따라 유리수를 완성하고 테스트해 봅시다.
+유리수에 대한 추상 데이터 타입 명세는 아래와 같이 작성해볼 수 있습니다.
+
+*Listing 2. 유리수를 통해 살펴본 명세 작성 예제*
+#+BEGIN_SRC
+Rational = data type is create, number, denom, add, minus, multiply, divide
+Overview
+Rational is unbounded mathematical rational number.
+Operations
+create = proc(x: int, y: int) returns (Rational)
+effects Returns a new, empty Rational.
+numer = proc(r: Rational) returns (int)
+effects Returns a numerator of Rational.
+denom = proc(r: Rational) returns (int)
+effects Returns a denominator of Rational.
+add = proc(r1: Rational, r2: Rational) returns (Rational)
+effects Returns the Rational that is the result of adding r1 and r2.
+minus = proc(r1: Rational, r2: Rational) returns (Rational)
+effects Returns the Rational that is the result of r1 - r2.
+( i.e., minus(r1, r2) = add(r1, create(- numer(r2), denom(r2))) )
+multiply = proc(r1: Rational, r2: Rational) returns (Rational)
+effects Returns the Rational that is the result of multiplying r1 and r2.
+divide = proc(r1: Rational, r2: Rational) returns (Rational)
+effects Returns the Rational that is the result of dividing r1 and r2.
+End Rational
+#+END_SRC
+
+명세 작성에서 볼 수 있듯이 유리수라는 데이터 타입은 생성되고, 분자를 구하고, 분모를 구하고, 그것을 이용해 덧셈/뺄셈/곱셈/나눗셈을 적용할 수 있는 데이터 타입을 뜻합니다. 알고 보면 아무것도 아닌데 임의의 데이터 타입을 정의하는 일을 어렵게 느끼는 사람이 많습니다. 사실 방법만 알면 자신이 정의한 데이터 타입에 대한 연산을 뽑아내는 일은 아주 쉽답니다. 자신이 만든 어떤 데이터 타입, 즉 자신이 개발하는 클래스에 구현하는 연산은 아래 다섯 가지 범주를 벗어나지 않기 때문입니다.
+
+[[https://user-images.githubusercontent.com/25581533/73698043-6b6db200-4723-11ea-82de-1a4022a1219c.png]]
+
+전체 틀을 살펴보면, 아래와 같이 계층을 이루게 됨을 알 수 있습니다. 우리가 작성한 유리수 클래스를 사용하는 사용자 입장에서 보면 객체 고유 행위를 표현하는 메서드만이 관심의 대상입니다. 나머지 연산들은 그러한 메서드를 구현하기 위한 보조제 역할을 수행합니다. 그러한 보조제로 쓴 메서드는 모두 세 가지인데, Selector는 흔히 getXXX()의 이름을 가지며 getter라고 불립니다. Predicate은 흔히 isXXX()의 이름을 가지며 객체 상태를 확인하는 역할을 수행합니다. Modifier는 흔히 setXXX()의 이름을 가지며 setter라고 부릅니다.
+
+개발을 위해서는 객체 고유의 연산의 명세와 구체적인 구현 사이의 연결 고리가 필요한데, 그 역할을 Selector, Predicate, Modifier로 구성된 메서드들이 대신합니다. 이런 메서드들을 묶어 추상화 장벽(abstraction barrier)이란 표현을 사용하기도 합니다. 추상화 장벽이란 클래스가 표현하는 데이터 타입의 What의 관점과 How의 관점을 연결해주는 최소한의 인터페이스를 얘기하며, 사용자로 하여금 내부 객체나 상태를 직접 제어하지 않도록 도와줌으로써 정보 은닉(information hiding)이라는 객체 지향 고유의 성질을 만족하도록 도와주게 되죠.
+
+[[https://user-images.githubusercontent.com/25581533/73698119-9526d900-4723-11ea-9b54-cc9ec04eaa8d.png]]
+
+*그림 2. 추상화 장벽의 이해*
+
+설명 드린 내용을 토대로 유리수를 완성하고, 구현된 기능에 대한 테스트 시나리오를 만들어 검사하는 것이 첫 번째 퀴즈입니다
+
+** 퀴즈 2. 데이터 추상화 개념을 객체지향 영역까지 확장해 현실 세계를 모델링해 봅시다.
+
+실세계에 있는 더 복잡한 문제를 해결하기 위해 등장한 패러다임이 객체 지향이기 때문에 문제의 복잡도 여부와 상관없이 객체 지향적인 문제 해결을 위해서는 아래와 같이 현실 세계를 모델링할 수 있는 능력을 가져야 합니다. 아래와 같은 대화가 있습니다. 이러한 대화를 어떻게 프로그램으로 표현할 수 있을까요?
+
+[[https://user-images.githubusercontent.com/25581533/73698164-b5ef2e80-4723-11ea-82be-0e95a0b6ca25.png]]
+
+객체 지향 언어의 주체는 객체입니다. 상황에 따라 적절한 동작을 수행하는 객체를 개발하고, 해당 객체를 조합해 문제를 해결해야 하는 것이죠. 그럼 위와 같은 상황에서 무엇을 객체로 만들어야 하는 것일까요?
+
+이 난감한 상황을 해결하기 위해 여러분은 원작을 영화 대본과 같은 대화 방식으로 다시 쓸 필요가 있습니다. 아래 그림과 같이 영화 대본만 만들면 영화에 등장하는 주인공들을 객체로 선택하면 되기 때문입니다. 원작을 토대로 영화 대본을 만드는 작업을 진행해보겠습니다. 이런 과정을 정규화 작업이라고 하는데요, 정규화는 정형화되지 않은 애매모호한 현실 상황(사용자 요구사항)을 대본으로 옮겨 쓰면서 어떤 배역이 있어야 하는지를 분석하는 과정을 뜻하며, 소프트웨어 개발 절차상 가장 시간이 오래 걸리는 작업이기도 합니다.
+
+우리의 얘기를 엮어 나가는 데는 철수, 영희, 덕배라는 이야기를 진행해 나가는 사람과 소품으로 사용된 도시락이라는 모두 네 개의 객체가 필요함을 알 수 있습니다. 대본 형식으로 만들고 나면 장면마다 어떤 말과 행동을 해야 하는지 정확히 이해할 수 있습니다.
+
+[[https://user-images.githubusercontent.com/25581533/73698200-cacbc200-4723-11ea-84c0-72c164d8bb8e.png]]
+
+대본을 만들면서 알게 된 내용을 정리하면 다음과 같습니다.
+
+[[https://user-images.githubusercontent.com/25581533/73698225-e040ec00-4723-11ea-9604-480d1dbb7a35.png]]
+
+여기서 가장 주목해야 할 단어는 바로 행위(behavior)라는 용어입니다. 행위는 객체가 수행해야 할 역할을 일반화한 것으로 수행할 행위가 같은 객체들을 만들어낼 수 있는 틀이 바로 클래스(class)이기 때문입니다. 같은 타입(클래스)의 객체는 메시지, 메서드, 상태로 표현되는 자신의 행위가 같은 객체를 뜻합니다.
+
+우리의 1차 대본은 영화를 만들기에는, 다시 말해 프로그램을 작성하기에는 아직 많은 부분이 애매모호합니다. 메시지를 받지 못하는 대상은 역할이 주어질 수 없고, 따라서 당연히 캐스팅되는 주인공(객체)도 없습니다. 이제 1차 대본을 영화화하기 직전의 최종 대본 상태로 만들어 볼까요?
+
+[[https://user-images.githubusercontent.com/25581533/73698276-01094180-4724-11ea-8813-bc33fdbed0d8.png]]
+
+이제 하나의 객체가 받아 처리하는 모든 메시지를 모아 정리함으로써, 그 객체가 해야 할 임무가 뚜렷해졌습니다. 또한 상태의 변화가 지문 속에서 확연히 드러남을 확인할 수 있습니다. 이제 어떻게 영화로 만들 것인지에 대한 감이 조금씩 잡히기 시작할 것입니다. 조금 더 구체적인 모습을 보여드리기 위해 파이썬을 이용해 샘플 코드를 작성해 보았습니다.
+
+*Listing 3. story.py*
+#+BEGIN_SRC python
+# 도시락을 만들기 위한 클래스
+class Lunch:
+    def __init__(self, weight):
+        self.weight = weight
+    def getWeight(self):
+        return self.weight
+    def getHalf(self):
+        self.weight = self.weight/2
+        return Lunch(self.weight)
+
+
+# 영희, 철수, 덕배를 만들기 위한 클래스
+class Person:
+    def __init__(self):
+        self.stomach = 0
+    def canHaveLunch(self):
+        return self.isHungry()
+    def isHungry(self):
+        return self.stomach <= 300
+    def shareLunch(self, myFriend):
+        if myFriend.canHaveLunch():
+            myFriend.haveLunch( self.myLunch.getHalf() )
+            self.haveLunch( self.myLunch )
+            self.myLunch = None
+    def takeLunch(self, goodLunch):
+        self.myLunch = goodLunch
+    def haveLunch(self, goodLunch):
+        self.stomach = self.stomach + goodLunch.getWeight()
+
+
+# 대본에 따른 영화 구현
+# 등장 인물 생성
+youngHee = Person()
+chulSu = Person()
+dukBae = Person()
+# 초기 설정
+youngHee.haveLunch( Lunch(500) )
+dukBae.takeLunch( Lunch(800) );
+# 시나리오 진행
+print '영화 상영'
+if not youngHee.canHaveLunch():
+if dukBae.canHaveLunch():
+    dukBae.shareLunch( chulSu )
+if not chulSu.isHungry() and not dukBae.isHungry():
+    print '만사가 해결된 것이다.'
+else:
+    print '누군가는 엄청 불행하다.'
+#+END_SRC
+
+시나리오에 따라 스토리를 구현하면 만사가 해결된 상태로 의도했던 결과가 나오게 될 것입니다.
+
+[[https://user-images.githubusercontent.com/25581533/73698422-74ab4e80-4724-11ea-832d-d16c4020e09f.png]]
+
+평소에 즐겨 사용하는 객체 지향 패러다임을 지원하는 언어로 이와 같이 스토리를 완성하는 것이 두 번째 퀴즈입니다.
+
+** 도전 과제. 자료구조를 완성하거나 즐겨보는 드라마를 프로그래밍의 세계로 들여놓기
+데이터 추상화를 위한 명세 작성 방법은 일반적인 자료 구조 책에서 흔히 볼 수 있는 추상 데이터 타입(ADT)을 통해 연습하면 더욱 효과적일 수 있습니다. 자신이 잘 알고 있는 자료 구조를 구현해보는 연습을 할 때는 컴퓨터를 끄고 연습장을 한장 꺼내 그에 대한 명세를 정확히 작성하는 일부터 시작해보는 게 어떨까요? 명세가 완전히 작성된 후에, IDE를 실행하고 다양한 구현 기법을 써서 그 명세를 구현해 보는 거죠.
+
+또한 최근 방영이 끝난 온에어 같은 드라마의 명장면을 찾아 시나리오를 구한 다음 그 시나리오를 프로그래밍으로 어떻게 옮겨 놓을 수 있을지를 고민해 보는 것도 재미있는 도전 과제가 될 것 같습니다.
+
+다음 회에는 지난 회와 이번 회 문제를 푼 독자들의 코드를 간단히 리뷰해 보겠습니다.
+
+마지막으로 여러분이 작성한 코드를 공유해 주세요. 블로그에 작성한 코드를 정리한 후, 제 블로그에 댓글이나 트랙백 (http://seal.tistory.com/trackback/151) 을 남겨주시거나 이메일(dwkorea@kr.ibm.com) 로 보내주시면 됩니다. 창의적인 코드를 보내주신 분에게는 일정 기간에 한 번씩 선물도 드릴 예정입니다. 적극적인 참여로 한걸음씩 같이 발전해봅시다.
