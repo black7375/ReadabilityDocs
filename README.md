@@ -23,5 +23,6 @@ Document-specific licenses are grouped for each project.
 **IBM Special developerWorks Special Issue**  
 예전 [IBM Special developerWorks Special Issue](https://web.archive.org/web/20090724171313/http://www.ibm.com/developerworks/kr/library/s_issue//)로 연재되었던 내용으로, 최대한 복원해보았습니다.
 
+* [초보 개발자 코드 트레이닝](https://github.com/black7375/ReadabilityDocs/tree/master/%EC%B4%88%EB%B3%B4%20%EA%B0%9C%EB%B0%9C%EC%9E%90%20%EC%BD%94%EB%93%9C%20%ED%8A%B8%EB%A0%88%EC%9D%B4%EB%8B%9D): 프로그래밍은 문제를 주어진 상황과 제한된 자원 안에서 효율적이며 창조적으로 해결하는 행위라 볼 수 있습니다. 정답이라는 압박에서 벗어나 자신만의 기발한 해법으로 풀 수 있는 문제들이 매달 제출됩니다.
 * [해커문화의 뿌리를 찾아서](https://github.com/black7375/ReadabilityDocs/tree/master/%ED%95%B4%EC%BB%A4%20%EB%AC%B8%ED%99%94%EC%9D%98%20%EB%BF%8C%EB%A6%AC%EB%A5%BC%20%EC%B0%BE%EC%95%84%EC%84%9C): 아마추어 커널 해커이자 IT 역사 탐구에 관심이 많은 안윤호님이 6회에 걸쳐, 매월 첫째 주에 이야기 보따리를 풉니다.
 * [컴퓨팅 기술의 원형탐험](https://github.com/black7375/ReadabilityDocs/tree/master/%EC%BB%B4%ED%93%A8%ED%8C%85%20%EA%B8%B0%EC%88%A0%EC%9D%98%20%EC%9B%90%ED%98%95%ED%83%90%ED%97%98): 오늘날의 컴퓨팅 기술은 정교하고 복잡합니다. 그런데 초창기에는 과연 어떤 모습이었을까요? 이번 연재에서는 컴퓨팅 기술의 태고로 거슬러 올라가 그 원시형을 살펴보고 재현해 보려 합니다. 
