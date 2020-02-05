@@ -1,0 +1,155 @@
+* 시맨틱 소셜 네트워크를 향해 Part 1: 시맨틱 소셜 네트워크와 FOAF(Friend Of A Friend)
+2007년 7월 31일
+:PROPERTIES:
+:TOC:      this
+:END:
+-  [[#들어가며][들어가며]]
+
+** 들어가며
+많은 사람들이 웹 2.0에 관심을 나타내고 있는 시점에서 ‘시맨틱 웹’이란 주제를 다시 던지는 것은 부담스러운 일이다. 국내에서 시맨틱 웹에 대한 접근은 점진적인 과정을 통해 만들어지기보다 특정한 성과에 초점이 맞춰져 소개되고 프로젝트가 진행되어 온 것이 사실이다. 그 결과 시맨틱 웹이 무엇인지에 대한 심도 깊은 논의보다는 현실의 요구를 만족시킬 수 있는 ‘무엇’을 찾는 데 많은 시간과 노력을 투자해 오고 있다.
+
+최근까지 시맨틱 웹을 온톨로지 기술로 인식해 왔고 막연히 ‘온톨로지를 사용하면 추론하기 좋다’는 식의 접근으로 인해 시맨틱 웹이 어렵고 구현하기 힘든 것이란 오해가 있었다. 물론 시맨틱 웹 기술이 쉽다는 것은 아니다.
+
+‘온톨로지=추론’은 시맨틱 웹과 온톨로지에 대해 회의적인 입장을 견지하는 쪽에서 주로 공격하는 가정이다. 좋은 온톨로지가 없다면 추론할 수 있는가? 반대로 추론엔진이 없다면? 하는 형태의 질문은 대답하기 쉽지 않다. 온톨로지는 지식을 의미적으로 표현하고 추론은 온톨로지에 표현된 지식에서 특정 조건에 맞는 지식을 찾기 위한 효율적인 방법이 될 수 있다. 따라서 좋은 온톨로지를 만들고 추론엔진을 만들 수 있다면 문제 해결은 쉽겠지만 온톨로지, 추론엔진을 만드는 일 자체가 상당한 시간과 노력을 요구하는 일이다. 그런데 시맨틱 웹은 온톨로지가 전부인가? 온톨로지는 추론을 위한 것인가?
+
+시맨틱 웹은 웹에 대한 비전을 제시한 것으로 이를 실현하기 위해선 적합한 형태의 데이터, 기술, 그리고 문화적 요소들의 조합이 필요하다. 이번 연재에서 필자는 ‘시맨틱웹=온톨로지=추론’이 아닌 ‘의미적 링크’ 관점에서 시맨틱 웹을 살펴보고, 소셜 네트워크(social network)에 시맨틱 웹을 적용할 수 있는 방법을 소개한다. 이런 접근 방법을 통해 특정 도메인의 지식 표현이 아닌 웹 데이터의 의미적 연결에 초점을 두고 서로 다른 데이터들을 어떻게 연결할 수 있을 것인지 설명할 수 있다.
+
+시맨틱 웹이 월드와이드웹의 확장된 형태라고 정의한 측면으로 보면 ‘링크’는 특정한 자원을 단순히 연결하는 수준을 넘어 ‘의미적’으로 표현하는 것이 기본이라 할 수 있다. 여기서 링크의 ‘의미적’ 표현이란 페이지나 사이트의 링크뿐만 아니라 개별 자원들에 명시적인 속성을 부여하여 연결하는 것을 말한다. 예를 들어, 그림 1에서 개별 개체들 사이엔 링크가 있고 서로 연결되어 있다.
+
+[[https://user-images.githubusercontent.com/25581533/73794951-d3d49600-47ec-11ea-81c4-647970e2a744.png]]
+
+*그림 1. 링크*
+
+그러나 그림 1의 개체들은 어떤 관계로 연결되었는지에 대한 정보가 부족하다. 반면, 시맨틱 웹 환경에서 개체들은 그림 2와 같이 ‘연결된’ 상태와 어떤 ‘의미’로 연결되었는지에 대한 정보를 함께 갖게 된다. 그림 2에서 특정 노드들은 방향성이 있는 속성으로 연결되어 있는데 크게 사람에 대한 정보(m:attending, p:GivenName, p:hasEmail), 위치에 대한 정보(m:Location, g:zip, g:lat, g:long)를 표현하고 있다. 즉, 서로 다른 도메인의 정보도 의미를 갖고 있는 링크로 서로 연결할 수 있는데 이것이 시맨틱 웹에서 말하는 링크의 기본 개념이다.
+
+[[https://user-images.githubusercontent.com/25581533/73794969-da630d80-47ec-11ea-821a-4269c4a8af11.png]]
+
+*그림 2. 시맨틱 웹 환경에서의 링크 표현*
+
+FOAF(Friend of a Friend), SIOC(Semantically-Interlinked Online Communities), SKOS(Simple Knowledge Organisation Systems) 등과 같은 RDF 어휘들은 특정한 목적에 맞춰 정보를 표현할 수 있는 방법을제공한다. 앞서 언급한 RDF 어휘들은 복잡하지 않고 풍부한 의미 표현을 지원하지 않기 때문에 엄격한 지식 표현 이론의 틀에서 보면 부족함이 있다. 그러나 특정한 정보를 RDF를 이용하여 의미적으로 표현하고 연결하는 기본 기능을 충실히 제공하고 있다. 더불어 이렇게 만들어진 RDF 어휘들은 서로 연결되어 상호 운용할 수 있기 때문에 RDF를 이용한 네트워크를 만들 수 있는 방법을 제공한다.
+
+** 시맨틱 웹과 웹 2.0
+
+웹 2.0은 사람 중심의 정보 활동이라는 측면에서 중요한 의미를 찾을 수 있다. 시맨틱 웹은 자동화된 기법을 이용해 정보를 생산하고 처리하는 방식에 초점을 두고 있었다. 따라서 온톨로지가 의미적으로 풍부한 지식을 표현할 수 있지만, ‘정보를 효과적으로 생산할 수 있는가’라는 쉽게 해결하기 힘든 문제가 있다. 즉, 웹 데이터를 표현하기 위해 온톨로지가 적합한 것인지에 대한 의문이 꾸준히 제기되어 왔다. 반면, 웹 2.0은 사용자의 참여를 통해 메타데이터를 생산하고 공유하는 방법을 제공함으로써 더 쉽게 데이터를 생산할 수 있는 가능성을 제시하고 있다. 더불어 정보 제공자와 수요자의 역할이 유연하기 때문에 누구나 정보를 소비하는 역할뿐만 아니라 생산하는 집합적이고 순환적인 활동의 주체가 될 수 있다. 집단 지성(collective intelligence)은 이와 같은 사용자의 적극적인 참여를 통해 만들어지는 결과물의 한 가지 형태라 볼 수 있다.
+
+** 시맨틱 소셜 네트워크
+시맨틱 웹의 목적은 의미적 연결이다. 팀 버너스 리는 최근 웹이 기술적 관점에서 사회적 관점으로 진화하고 있다고 말한 바 있다. 기술적 관점에서 웹을 보면 초기 HTML부터 최근의 서버페이지에 이르는 다양한 기술을 생각할 수 있다. 반면 사회적 관점은 웹이 사람들의 생활 방식에 영향을 주는 사회적 기능을 포함하고 있음을 말한다. 본 연재의 주제인 사회 네트워크는 사람 사이의 관계를 분석하는 것으로 사회과학의 범주였는데, 최근 웹을 통해 사회 네트워크를 구축하고 관리하는 형태로 발전되고 있다. 웹2.0은 웹의 사회적 기능을 발전시키는데 중요한 역할을 하고 있다. 그렇다면 *사회 네트워크에서 시맨틱(의미)은 왜 필요한 것일까?* 이 질문에 대한 답에 앞서 소셜 네트워크의 기본적인 정의를 먼저 살펴보자.
+
+소셜 네트워크는 사회구조 속에서 상호 연계된 구성 요소들의 ‘추상적인’ 연결 관계를 말한다. 네트워크 분석 단위는 개인들의 개별적 속성(individual attributes)이 아닌 개인 사이의 상호 작용, 즉 개인 사이, 개체 사이 혹은 사건들 사이에서 형성되는 관계망을 묘사하는 것이 연구의 핵심이다.
+소셜 네트워크 이론은 그래프 이론에 이론적 바탕을 두고 있다. 그래프 이론은 점과 그 점들을 연결하는 연결선으로 구성된다. 그래프란 두 개의 유한 집합, 즉 정점(vertex) 혹은 노드(node)들의 집합과 간선(edge) 혹은 아크(arc)들의 집합으로 이루어진 구조를 말한다. 예컨대, 간선 e_{i}는 정점 v_{j}로부터 정점 v_{k}로의 간선이 된다.
+
+e_{i}=(v_{j}, v_{k})
+
+이 때, v_{j}를 간선의 시작점(initial vertex), 정점 v_{k}를 종착점(terminal vertex)이라고 부른다. 이와 같은 구조는 간선에 방향을 지정하기 때문에 이를 유향그래프라고 한다. 또 그래프를 구성하는 요소인, 정점과 간선에 라벨(label)을 붙일 수 있는데, 이러한 그래프를 이름표가 있는 그래프(labeled graph)라 한다. 사회적 네트워크에서는 정점이 사람에 해당되고, 간선이 사람과 사람의 관계에 해당한다. 즉 사람 사이에 알고 있는 사이이면 연결선이 있고, 모르는 경우는 연결선이 없다고 할 수 있다.
+
+“아는 사이를 어떻게 의미적으로 표현할 수 있을까?”
+
+비록 연결선이 사람 사이의 관계를 표현할 수 있지만 알고 있는 관계를 좀 더 구체적으로 표현하는 것이 필요하다. 앞서 언급한 대로 시맨틱 웹에서 링크는 의미적으로 표현되듯이, 사람 사이의 관계도 의미적으로 표현될 수 있다. 즉 그림 3은 전통적인 사회 네트워크에서 사람 사이의 관계를 표현한 모형인데, 앞서 언급한 링크의 개념과 같이 연결 관계에 대한 의미가 존재하지 않다. 반면, 시맨틱 소셜 네트워크는 연결 관계인 링크에 의미를 부여하는 것으로 노드에 해당되는 사람이 누구인지 함께 표현할 수 있다(그림 4 참조).
+
+시맨틱 소셜 네트워크는 시맨틱 웹 환경에서 만들어진 의미적 링크에 사람에 대한 관계를 연결하고, 사람들이 갖고 있는 혹은 이미 연결되어 있는 정보들을 네트워크로 연결하는 의미적 공간이라 할 수 있다.
+
+[[https://user-images.githubusercontent.com/25581533/73794975-ddf69480-47ec-11ea-88d2-39bc4ad74c50.png]]
+
+*그림 3. 링크와 노드로 표현된 사람 사이의 관계(www.smartmobs.com/archives/images/friendster.gif)*
+
+[[https://user-images.githubusercontent.com/25581533/73795025-f4045500-47ec-11ea-8615-b9d25b99f0ec.png]]
+
+*그림 4 시맨틱 소셜 네트워크의 기본 개념*
+
+시맨틱 웹 환경에서 소셜 네트워크를 표현하는 방법에는 FOAF, XFN(XHTML Friends Network), xfolk 등과 같은 다양한 방법이 있는데 이 연재에서는 가장 보편적이고 널리 쓰이는 FOAF를 중심으로 살펴본다.
+
+** 친구의 친구
+
+‘친구의 친구’라는 의미인 FOAF는 친구를 통해 친구를 만들어가는 인간 관계를 RDF로 표현한 온톨로지다. FOAF에 표현된 개인 정보와 개인의 관계에 대한 정보는 FOAF를 지원하는 시스템을 통해 다른 FOAF 문서에 연결될 수 있다.
+
+개인의 FOAF가 온라인에 공개되면 다른 사용자가 이를 참조할 수 있는데 이와 같은 반복적이고 순환되는 과정을 통해 FOAF를 통한 연결성이 확장될 수 있다. FOAF의 기본은 ‘A가 B를 알고 있다’로 요약할 수 있는데, 이 관계는 ‘foaf:knows’라는 속성으로 표현된다. FOAF에 대한 구체적인 정보는 FOAF 명세서를 참고하기 바란다. 이 글의 나머지 부분에서는 FOAF-a-Matic을 이용해 FOAF를 어떻게 만들 수 있는지 살펴본다.
+
+** FOAF-a-Matic
+
+FOAF-a-Matic은 FOAF를 쉽고 빠르게 만들 수 있도록 지원하는 자바 스크립트 기반의 웹 애플리케이션이다. 국내에도 번역된 두 개의 사이트 (주 1), (주 2) 가 있기 때문에 FOAF를 만드는 것이 어렵지 않을 것이다.
+
+FOAFaMaticMark2도 사용할 수 있으니 확인한 후 원하는 형식을 선택하기 바란다. FOAFaMaticMark2는 사용자 인터페이스 기반으로 FOAF를 생성할 수 있는 기능뿐만 아니라 파일 import/export 기능과 같은 다양한 작업을 지원한다. FOAFaMaticMark2는 다운로드해 사용할 수 있으며 오픈소스이기 때문에 사용자의 목적에 맞게 수정해 사용할 수 있다.
+
+[[https://user-images.githubusercontent.com/25581533/73795036-fe265380-47ec-11ea-89f5-5b38ad569762.png]]
+
+*그림 5. FOAF-a-Matic 2*
+
+입력 폼의 첫 번째는 개인 신상 정보와 관련된 내용들인데, 이름과 이메일 주소는 필수 항목으로 반드시 입력해야 한다. 개인 정보는 foaf:Person 클래스로 표현되는데, 이 클래스는 foaf:Agent의 서브클래스다. 따라서 모든 사람은 FOAF에서 에이전트다. 이메일 주소는 공개하고 싶지 않을 경우, 암호화된 코드로 처리할 수 있다.
+“FOAF 명세서 생성” 버튼 위에 있는 체크 박스(스팸 발송자로부터 이메일 보호하기)를 선택하면 이메일 주소는 ‘foaf:mbox_sha1sum’ 속성에 ‘c008e6bd0d6995e5241e3bcba54bbe0d0b20887a’와 같은 형태로 표현된다. 체크 박스를 선택하지 않았다면 이메일 주소는 다음과 같이 표현된다.
+
+#+BEGIN_SRC
+ <foaf:mbox rdf:resource="mailto:sonagi.kim@gmail.com"/>
+#+END_SRC
+
+[[https://user-images.githubusercontent.com/25581533/73795041-03839e00-47ed-11ea-920b-d969000f4f8f.png]]
+
+*그림 6. 신상 정보 입력*
+
+#+BEGIN_SRC
+<foaf:Person rdf:ID="me"> <foaf:name>Hak Lae Kim</foaf:name> <foaf:title>Mr</foaf:title> <foaf:givenname>Hak Lae</foaf:givenname> <foaf:family_name>Kim</foaf:family_name> <foaf:nick>sonagi</foaf:nick> <foaf:mbox_sha1sum>c008e6bd0d6995e5241e3bcba54bbe0d0b20887a</foaf:mbox_sha1sum> <foaf:homepage rdf:resource="http://www.blogweb.co.kr"/> <foaf:phone rdf:resource="tel:353-86-212-2487"/> </p>
+#+END_SRC
+
+[[https://user-images.githubusercontent.com/25581533/73795045-067e8e80-47ed-11ea-8f6f-f7bfca7a3b72.png]]
+
+*그림 7. 직장 정보 입력*
+
+#+BEGIN_SRC
+<foaf:workplaceHomepage rdf:resource="http://www.deri.ie"/> <foaf:workInfoHomepage rdf:resource="http://scot-project.org"/>
+#+END_SRC
+
+[[https://user-images.githubusercontent.com/25581533/73795059-1007f680-47ed-11ea-877f-5b3840277bca.png]]
+
+*그림 8. 학교 정보 입력*
+
+#+BEGIN_SRC
+<foaf:schoolHomepage rdf:resource="http://www.nuig.ie"/>
+#+END_SRC
+
+FOAF에서 가장 기본이 되는 속성이 foaf:knows이다. 이 속성은 누군가를 알고 있다는 관계를 표현하기 위한 것인데 range 값으로 foaf:Person을 정의하고 있다. 예를 들어, ‘A 가 B를 알고 있다’는 관계는 A foaf:knows B로 표현할 수 있다. 필자의 경우, 같은 연구소에 있는 Stefan Decker와 John Breslin을 foaf:knows에 추가했다. 그러나 두 사람의 FOAF에 필자가 추가되었는지 알 수 없다. 확인해 보면 쉽게 알 수 있겠지만, 원칙적으로 foaf:knows의 관계에 있는 사람 사이에서 반드시 서로 참조하고 있을 필요는 없다. 즉, foaf:knows에 표현된 사람들이 서로 연락을 하거나, 친구라는 것을 가정하고 있진 않다. foaf:knows는 FOAF 프로파일을 만드는 입장에서 특정한 사람과의 관계를 연결하기 위한 목적으로 사용되기 때문에 쌍방의 인간 관계를 표현하는 데 한계가 있다. 반면 knows 관계를 통해 사람들이 자유롭게 (제약이 없는 상태에서) 연결될 수 있기 때문에 이 자체가 약한 연결을 끊임없이 만들 수 있는 방법이 될 수 있다. foaf:interests 속성을 사용하여 정보를 표현해 보는 것도 생각해 볼 수 있다.
+
+[[https://user-images.githubusercontent.com/25581533/73795409-e56a6d80-47ed-11ea-864c-02f6be544600.png]]
+
+*그림 9. 친구 추가*
+
+#+BEGIN_SRC
+<foaf:knows> <foaf:Person> <foaf:name>Stefan Decker</foaf:name> <foaf:mbox_sha1sum>1bc1f862b688a45b7e0c8d4a8467c23177c53fad</foaf:mbox_sha1sum> </foaf:Person></foaf:knows> <foaf:knows> <foaf:Person> <foaf:name>John Breslin</foaf:name> <foaf:mbox_sha1sum>9a6b7eefc08fd755d51dd9321aecfcc87992e9a2</foaf:mbox_sha1sum> <rdfs:seeAlso rdf:resource="http://www.deri.ie/fileadmin/scripts/foaf.php?id=70"/> </foaf:Person> </foaf:knows>
+#+END_SRC
+
+결과 생성에 앞서 한 가지만 더 살펴보자. 입력을 제대로 했다면 FOAF 파일을 얻게 될 텐데 이 파일의 상단에 다음과 같은 RDF 코드를 볼 수 있을 것이다. foaf:PersonalProfileDocument는 FOAF 문서를 만든 사람(foaf:maker)에 대한 메타데이터를 표현하고 있으며, FOAF를 생성해준 도구에 대한 정보도 함께 포함하고 있다.
+
+#+BEGIN_SRC
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:admin="http://webns.net/mvcb/"> <foaf:PersonalProfileDocument rdf:about=""> <foaf:maker rdf:resource="#me"/> <foaf:primaryTopic rdf:resource="#me"/> <admin:generatorAgent rdf:resource="http://www.ldodds.com/foaf/foaf-a-matic"/> <admin:errorReportsTo rdf:resource="mailto:leigh@ldodds.com"/> </foaf:PersonalProfileDocument>
+#+END_SRC
+
+마지막으로, ‘FOAF 명세서 생성’ 버튼을 누르면 자신의 FOAF 문서가 만들어진다. FOAF-a-Matic을 이용해 만들어진 FOAF는 비교적 간단한 형태로 FOAF 명세서에 있는 다른 클래스와 속성을 이용해 자유롭게 확장할 수 있다. FOAF는 공개하고 공유하지 않는다면 의미가 없다. FOAF 문서를 공개하는 것은 매우 쉽다. 공개에 대한 자세한 방법은 앞서 소개한 FOAF-a-Matic에 자세히 소개되어 있기 때문에 자세한 설명은 생략한다.
+
+[[https://user-images.githubusercontent.com/25581533/73795418-e9968b00-47ed-11ea-9fee-85b3e446c3ba.png]]
+
+*그림 10. FOAF 명세 생성*
+
+** 마치며
+
+개인 정보를 공개한다는 것이 쉽지 않을 수 있지만 공유를 통해 또 다른 네트워크를 만들어 가는 것은 흥미로운 일이다. 안타깝게도 국내에서 자신의 FOAF를 공유하는 사람은 많지 않다. 한국 상황에서 싸이월드와 같은 서비스가 사용자들에게 매력적인 것은 부정할 수 없지만, 정보를 공유하는 것도 나쁘지 않을 것이다.
+
+본 연재에서는 시맨틱 웹에 대한 다른 접근 방법의 필요성과 함께 시맨틱 소셜 네트워크를 만들기 위한 기본 요소인 FOAF에 대해 소개했다. 온톨로지는 도메인의 지식 표현을 위한 목적뿐만 아니라 데이터를 의미적으로 연결하기 위한 도구로 사용될 수 있다. 인프라를 만드는 일과 서비스를 이용해야 하는 것은 쉽게 해결하기 힘든 문제일 것이다. 시맨틱 웹 환경에서 사용할 수 없는 데이터가 부족한 상태에서 의미 검색, 추론, 또는 킬러 애플리케이션을 말하는 것은 먼 미래의 얘기일 것이다.
+
+요약해 보면, 자신의 FOAF를 만들고 공개하는 것은 시맨틱 웹 인프라를 만드는 첫걸음이 될 수 있고, FOAF 문서를 통해 다양한 사람들과 네트워크로 연결될 수 있을 것이다. 이러한 네트워크는 다른 RDF 어휘 등과 결합되어 또 다른 시맨틱 소셜 네트워크를 만들어갈 수 있을 것이다.
+
+다음 연재에서는 FOAF를 다른 RDF 어휘들과 함께 사용하여 어떻게 소셜 네트워크를 만들고 검색할 수 있는지 소개한다.
+
+*주*
+1. [[https://web.archive.org/web/20050913214932/http://www.w3c.or.kr/~hollobit/foaf/][http://www.w3c.or.kr/~hollobit/foaf/]]
+2. http://www.ldodds.com/foaf/foaf-a-matic.ko.html
+
+*참고 자료*
+- [[http://sioc-project.org/][SIOC 프로젝트]]
+- [[https://www.w3.org/2004/02/skos/][SKOS 프로젝트]]
+- [[http://www.foaf-project.org/][FOAF 프로젝트]]
+- [[http://www.ldodds.com/foaf/foaf-a-matic.ko.html][FOAF-a-matic -- RDF로 자신을 드러내세요]]
+- [[https://web.archive.org/web/20050913214932/http://www.w3c.or.kr/~hollobit/foaf/][FOAF-a-matic -- RDF로 자기소개하기]]
+- [[http://www.ldodds.com/foaf/foaf-a-matic.en.html][FOAF-a-matic -- Describe yourself in RDF]]
+- [[https://web.archive.org/web/20170628202310/http://www.ldodds.com/wordtin/Wiki.jsp?page=FOAFaMaticMark2][FOAFaMaticMark2]]
+- [[http://xmlns.com/foaf/spec/][FAOF 명세서]]
+- [[https://gmpg.org/xfn/][XFN]]
+- [[http://microformats.org/wiki/xfolk][xfolk]]
+- Clay Shirky, [[https://web.archive.org/web/20191117162526/http://www.shirky.com/writings/ontology_overrated.html][Ontology is Overrated: Categories, Links, and Tags]]
