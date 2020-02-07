@@ -1,4 +1,5 @@
 *  컴퓨팅 기술의 원형 탐험 Part 7 여러 가지 얼굴의 클로저
+2008년 9월 23일
 :PROPERTIES:
 :TOC:      this
 :END:

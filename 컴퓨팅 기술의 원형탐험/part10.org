@@ -1,4 +1,5 @@
 *  컴퓨팅 기술의 원형 탐험 Part 10 같은 잔가지(same fringe) 문제
+2008년 12월 23일
 :PROPERTIES:
 :TOC:      this
 :END:

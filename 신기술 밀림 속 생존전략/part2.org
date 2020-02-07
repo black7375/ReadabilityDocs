@@ -1,4 +1,5 @@
 * 신기술 밀림 속 생존전략 Part 2: 네거티브 전략, FUD
+2007년 5월 22일
 :PROPERTIES:
 :TOC:      this
 :END:

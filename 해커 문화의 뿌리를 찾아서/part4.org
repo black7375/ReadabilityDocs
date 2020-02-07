@@ -1,4 +1,5 @@
 * 해커 문화의 뿌리를 찾아서 Part 4: 액터와 람다
+2007년 7월 18일
 :PROPERTIES:
 :TOC:      this
 :END:

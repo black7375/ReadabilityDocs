@@ -1,4 +1,5 @@
 * 초보 개발자 코드 트레이닝 Part 2: 알고리즘과 성능
+2008년 4월 29일
 :PROPERTIES:
 :TOC:      this
 :END:

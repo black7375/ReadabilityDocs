@@ -1,4 +1,5 @@
 * 해커 문화의 뿌리를 찾아서 Part 2: 원시 리스프의 재구성
+2007년 5월 8일
 :PROPERTIES:
 :TOC:      this
 :END:

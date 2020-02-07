@@ -1,4 +1,5 @@
 * 해커 문화의 뿌리를 찾아서 Part 3: 해커리즘의 문화
+2007년 6월 5일
 :PROPERTIES:
 :TOC:      this
 :END:

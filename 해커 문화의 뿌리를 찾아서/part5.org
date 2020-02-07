@@ -1,4 +1,5 @@
 * 해커 문화의 뿌리를 찾아서 Part 5: Fixed Point 계산과 고차 함수
+2007년 8월 7일
 :PROPERTIES:
 :TOC:      this
 :END:

@@ -1,4 +1,5 @@
 * 초보 개발자 코드 트레이닝 Part 3: 데이터 추상화
+2008년 5월 27일
 :PROPERTIES:
 :TOC:      this
 :END:

@@ -1,4 +1,5 @@
 *  컴퓨팅 기술의 원형 탐험 Part 8 제어 흐름의 패턴
+2008년 10월 28일
 :PROPERTIES:
 :TOC:      this
 :END:
