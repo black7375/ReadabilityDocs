@@ -3,7 +3,8 @@
 **라이센스** 모든 글의 저작권은 안윤호(mindengine@freechal.com)님께 있습니다.
 
 **저자소개**
-![안윤호](https://user-images.githubusercontent.com/25581533/73791730-3e360800-47e6-11ea-9de8-6e849f2127ff.png)
+
+![안윤호](https://user-images.githubusercontent.com/25581533/73791730-3e360800-47e6-11ea-9de8-6e849f2127ff.png)  
 필자는 아마추어 리눅스 커널 해커였으며 최근에 팹(Fab)이라는 책을 번역 출간했다. 컴퓨터의 여러 분야에 관심이 많고 컴퓨터와 문화의 인터페이스에도 관심이 많다.
 
 

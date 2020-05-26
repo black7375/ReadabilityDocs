@@ -2,6 +2,11 @@
 
 **라이센스** 모든 글의 저작권은 안윤호(mindengine@freechal.com)님께 있습니다.
 
+**저자소개**
+
+![안윤호](https://user-images.githubusercontent.com/25581533/73791730-3e360800-47e6-11ea-9de8-6e849f2127ff.png)  
+필자는 아마추어 리눅스 커널 해커였으며 최근에 팹(Fab)이라는 책을 번역 출간했다. 컴퓨터의 여러 분야에 관심이 많고 컴퓨터와 문화의 인터페이스에도 관심이 많다.
+
 IBM Developer Works의 글이 모두 사라져 올려봅니다.
 
 * [1회(2008년 3월): 간단한 레지스터 머신에서 시작해 보기](https://github.com/black7375/ReadabilityDocs/blob/master/%EC%BB%B4%ED%93%A8%ED%8C%85%20%EA%B8%B0%EC%88%A0%EC%9D%98%20%EC%9B%90%ED%98%95%ED%83%90%ED%97%98/part1.org)
