@@ -1,0 +1,360 @@
+* 작고 아름다운 언어 Io, Part 1: 설치와 기본 문법
+:PROPERTIES:
+:TOC:      :include descendants
+:END:
+2010년 4월 20일
+
+:CONTENTS:
+- [[#io][IO]]
+- [[#다운로드와-설치][다운로드와 설치]]
+- [[#문법][문법]]
+- [[#기본-자료형][기본 자료형]]
+- [[#제어-구조][제어 구조]]
+- [[#차회-예고-프로토타입-기반-객체-지향-프로그래밍][차회 예고: 프로토타입 기반 객체 지향 프로그래밍]]
+:END:
+
+앞으로는 Io와 블라(VLAAH) API에 관한 연재를 함께 진행할 예정이다. 서로 전혀 다른 주제이지만 두 가지 모두 흥미로운 내용을 담고 있으니 지속적인 관심을 부탁드린다.
+
+** IO
+Io는 프로토타입 기반의 객체 지향 언어다. 또한 리스프(Lisp)를 리엔지니어링한 결과이기도 하며, 루아(Lua)의 특성을 이어받아 표준 C99로 작성되어 임베드하기 쉬운 스크립트 언어이기도 한다. [[http://iolanguage.com/][Io 공식 홈페이지]]의 소개를 인용하자면 다음과 같다.
+
+#+BEGIN_QUOTE
+Io는 (모든 값은 객체이며, 모든 메세지는 동적인) [[https://ko.wikipedia.org/wiki/%EC%8A%A4%EB%AA%B0%ED%86%A0%ED%81%AC][스몰토크(Smalltalk)]], ([[ko.wikipedia.org/wiki/%ED%94%84%EB%A1%9C%ED%86%A0%ED%83%80%EC%9E%85_%EA%B8%B0%EB%B0%98_%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D][프토토타입 기반]]의) [[https://en.wikipedia.org/wiki/Self_%28programming_language%29][셀프(Self)]], ([[https://en.wikipedia.org/wiki/Differential_inheritance][특징적 상속(differential inheritance)]]을 하는) 뉴턴스크립트(NewtonScript), (동시성을 위해 [[https://en.wikipedia.org/wiki/Actor_model][행위자(actor)]]와 퓨처(future) 개념을 갖는) 액트1(Act1), (코드가 런타임에 읽거나 수정 가능한 트리인) 리스프, 마지막으로 (작고 임베드하기 쉬운) 루아의 영향을 받은 프로토타입 기반 프로그래밍 언어다.
+#+END_QUOTE
+
+소개에서 짐작할 수 있듯 Io는 여러 프로그래밍 패러다임의 언어들로부터 다양하게 영향을 받은 멀티패러다임 언어이며, 프로그래밍에 있어 대안적인 개념을 제시하고 있다. 단순히 여러 패러다임을 섞어놓은 정도가 아니라, 한 언어 안에서 자연스럽게 그 모든 것을 통합하고 있다는 점에서 Io는 배울 가치가 있는 언어다. 아마 Io를 접함으로써 독자들의 프로그래밍에 대한 견식도 한층 넓어지고 흥미로운 것을 많이 얻을 수 있으리라 생각한다.
+
+이 연재는 독자가 이미 최소 하나 이상의 다른 프로그래밍 언어를 잘 다룰 줄 안다고 가정하며, 다른 언어들과 비교해 특징적인 것들을 위주로 설명할 것이다.
+
+
+** 다운로드와 설치
+Io는 현재 언어를 설계한 Steve Dekorte가 직접 구현한 버전이 존재하는데, 그의 깃허브(GitHub) 저장소(http://github.com/stevedekorte/io)에서 클론하여 소스 코드를 얻을 수 있다.
+#+BEGIN_SRC shell
+$ git clone git://github.com/stevedekorte/io.git
+$ cd io/
+#+END_SRC
+
+Io는 두 부분으로 나뉘어 있는데, 한 부분은 언어 VM이고 다른 한 부분은 그 외 애드온 패키지들이다. 애드온 빌드 스크립트는 Io로 작성되어 있기 때문에 먼저 VM을 컴파일해야 한다. 여기서는 Io의 언어적인 부분만 살펴볼 참이므로 애드온 패키지들을 컴파일해 설치하는 것은 생략하기로 한다. Io의 매력을 느낀 독자들이 직접 README 파일을 보고 설치해도 어렵지 않을 것이다.
+#+BEGIN_SRC shell
+$ make vm
+$ sudo make install
+#+END_SRC
+
+=make= 를 통해 VM을 빌드하고 설치하면 =/usr/local= 아래쪽에 라이브러리와 바이너리가 설치된다. =PATH= 환경변수에 =/usr/local/bin= 이 들어있다면 =io= 라고 입력하여 [[https://en.wikipedia.org/wiki/REPL][REPL]]을 띄울 수 있을 것이다.
+#+BEGIN_SRC shell
+$ io
+Io 20090105
+Io>
+#+END_SRC
+
+=Io>= 가 바로 프롬프트다.
+
+** 문법
+Io는 기본적으로는 충실한 객체 지향 언어인데 모든 문장은 객체에 메시지를 보내는 형태다. 그래서 문법이 무척 간단해 정의(대입)문을 제외하면 다음 BNF만으로도 표현 가능할 정도다.
+#+BEGIN_SRC io
+exp        ::= { message | terminator }
+message    ::= symbol [arguments]
+arguments  ::= "(" [exp [ { "," exp } ]] ")"
+symbol     ::= identifier | number | string
+terminator ::= "\n" | ";"
+#+END_SRC
+
+쉽게 설명하면 이렇다.
+#+BEGIN_SRC io
+receiver method
+receiver method(arguments, ...)
+#+END_SRC
+
+예를 들어 헬로 월드 예제 프로그램은 Io로 다음과 같이 작성하면 된다.
+#+BEGIN_SRC io
+"hello, world!" println
+#+END_SRC
+
+
+=println= 은 문자열에 속한 메서드로, 문자열 자신을 표준 출력 스트림에 쓰고 자기 자신을 반환한다. 자바(Java), 파이썬(Python), 루비(Ruby) 등 대부분의 언어에서 마침표(.)를 사용하는데, 그 대신 Io에서는 줄바꿈을 제외한 아무 공백 문자를 사용한다. 이 문법 덕분에 Io의 코드는 영어로 쓴 글을 보는 느낌이 강하게 든다.
+
+문자열을 잇는 메서드는 =..= 인데, 다음과 같이 사용한다.
+#+BEGIN_SRC io
+"hello, " ..("world!") println
+#+END_SRC
+
+Io에서 =.= 문자는 특별하게 취급되지 않으므로 변수 이름이나 메서드 이름 등에 사용해도 아무런 문제가 없다. 다만 =OperatorTable= 이라는 API를 통해 사용자가 정한 메서드 이름에 대해 괄호를 생략 가능하게 할 수 있다. =..= 나 =+= 등의 메서드 이름은 기본적으로 =OperatorTable= 에 괄호를 생략 가능하게 등록되어 있으므로 아래처럼 쓸 수 있다.
+#+BEGIN_SRC io
+("hello, " .. "world!") println
+#+END_SRC
+
+괄호를 생략하여
+#+BEGIN_SRC io
+"hello, " .. "world!" println
+#+END_SRC
+
+이라고 쓸 경우
+#+BEGIN_SRC io
+"hello, " .. ("world!" println)
+#+END_SRC
+
+과 같이 묶이게 되어 “world!”만 출력되므로 주의한다.
+
+사칙 연산은 아래와 같이 한다.
+#+BEGIN_SRC io
+1 + 4
+10 - 5
+2.5 * 2
+10 / 2
+27 % 11
+#+END_SRC
+
+다섯 표현식 모두 =5= 를 반환하며, 본래는 아래와 같이 일반 메서드를 호출하는 것이다.
+#+BEGIN_SRC io
+1 +(4)
+10 -(5)
+2.5 *(2)
+10 /(2)
+27 %(11)
+#+END_SRC
+
+마지막으로 대입문은 다음과 같다.
+#+BEGIN_SRC io
+identifier := expression
+identifier = expression
+#+END_SRC
+
+둘의 차이는 사소하다. 후자의 경우 아직 =identifier= 변수가 정의되지 않았을 때는 에러를 내지만 전자는 그렇지 않다. 쉽게 말해 전자는 정의고 후자는 업데이트다. 위 두 코드는 내부적으로 다음과 같이 변환되어 실행된다.
+#+BEGIN_SRC io
+setSlot("identifier", expression)
+updateSlot("identifier", expression)
+#+END_SRC
+
+대입문은 객체의 속성(Io에서는 슬롯(slot)이라고 한다)에 대해서도 사용되는데 다른 언어와 크게 다르지 않다.
+#+BEGIN_SRC io
+receiver slotName := expression
+receiver slotName = expression
+#+END_SRC
+
+위 코드 역시 내부적으로 다음과 같이 변환되어 실행된다.
+#+BEGIN_SRC io
+receiver setSlot("slotName", expression)
+receiver updateSlot("slotName", expression)
+#+END_SRC
+
+Io에서는 사실상 방금 설명한 문법만으로 모든 프로그래밍을 하며, 별도의 함수 정의 문법 등은 존재하지 않는다. 리터럴도 문자열 리터럴과 숫자 리터럴 둘밖에 없다. 이렇게 극히 제한적인 문법만으로 모든 프로그래밍이, 그것도 흔히 사용되는 다른 언어에 비해 더 추상적인 수준에서 가능한지는 앞으로 이어질 글을 읽으면 알 수 있을 것이다(그러나 아마 리스프에 이미 익숙한 독자라면 짐작 가능할 것이다).
+
+
+** 기본 자료형
+본격적으로 시작하기에 앞서 Io의 내장 객체들을 사용하여 준비운동을 해보자. 가장 많이 사용하는 자료형은 리스트다. 리스트는 파이썬이나 루비 등의 언어와 마찬가지로 요소의 자료형에 구애받지 않으며 아무 종류의 객체나 넣을 수 있다.
+#+BEGIN_SRC io
+Io> list(1, 2, 3)
+==> list(1, 2, 3)
+Io> list("string", 3.14, list(1, 2, 3, 4))
+==> list("string", 3.1400000000000001, list(1, 2, 3, 4))
+#+END_SRC
+
+리스트는 =append= 등의 메서드를 통해 변형 가능하다. Io에서는 =append=, =appendSeq= 같이 자기 자신을 변형하는 메서드는 대개 자기 자신을 반환하는데, REPL에서 보기에는 변형된 새로운 객체가 반환된 것인지, 자기 자신을 변형한 것인지 구분하기 힘들기 때문에 확인을 잘 해봐야 한다.
+#+BEGIN_SRC io
+Io> fruits := list("apple", "banana", "lemon")
+==> list("apple", "banana", "lemon")
+Io> fruits append("orange")
+==> list("apple", "banana", "lemon", "orange")
+Io> fruits appendSeq(list("strawberry", "blueberry", "raspberry"))
+==> list("apple", "banana", "lemon", "orange", "strawberry", "blueberry", "raspberry")
+#+END_SRC
+
+이렇게 만들어진 리스트는 =at= 을 통해 임의 접근이 가능하다. 그 외에도 =first= 나 =last= 로 처음과 마지막 요소를 가져올 수 있다.
+#+BEGIN_SRC io
+Io> fruits at(0)
+==> apple
+Io> fruits at(3)
+==> orange
+Io> fruits first
+==> apple
+Io> fruits last
+==> raspberry
+#+END_SRC
+
+리스트 길이는 =size= 메서드를 통해 알 수 있다.
+#+BEGIN_SRC io
+Io> fruits size
+==> 7
+#+END_SRC
+
+=join= 메서드를 사용하면 리스트의 내용을 한 문자열로 합칠 수 있다.
+#+BEGIN_SRC io
+Io> fruits join(", ")
+==> apple, banana, lemon, orange, strawberry, blueberry, raspberry
+#+END_SRC
+
+=map= 이나 =select= 등의 고차함수도 사용할 수 있다. 다만 Io에서는 함수를 넘기는 형식이 아니다. 이에 관해서는 다음에 좀 더 자세히 설명할 것이다.
+#+BEGIN_SRC io
+Io> fruits map(asUppercase)
+==> list("APPLE", "BANANA", "LEMON", "ORANGE", "STRAWBERRY", "BLUEBERRY", "RASPBERRY")
+Io> fruits select(endsWithSeq("berry"))
+==> list("strawberry", "blueberry", "raspberry")
+Io> fruits reduce(a, b, a .. " and " .. b)
+==> apple and banana and lemon and orange and strawberry and blueberry and raspberry
+Io> fruits sortByKey(size)
+==> list("apple", "lemon", "banana", "orange", "raspberry", "blueberry", "strawberry")
+#+END_SRC
+
+뒤집기는 =reverse= 다.
+#+BEGIN_SRC io
+Io> fruits reverse
+==> list("raspberry", "blueberry", "strawberry", "orange", "lemon", "banana", "apple")
+#+END_SRC
+
+문자열에도 리스트에 사용한 메서드 중 일부를 쓸 수 있다.
+#+BEGIN_SRC io
+Io> name := "Hong MinHee"
+==> Hong MinHee
+Io> name size
+==> 11
+Io> name reverse
+==> eeHniM gnoH
+#+END_SRC
+
+숫자 역시 객체이므로 여러 메서드를 사용할 수 있다.
+#+BEGIN_SRC io
+Io> 3.14 round
+==> 3
+Io> 3.14 ceil
+==> 4
+Io> 3.14 floor
+==> 3
+Io> 16 sqrt
+==> 4
+Io> 11 factorial
+==> 39916800
+#+END_SRC
+
+절댓값을 구하기 위해 =abs= 메서드를 사용할 수 있는데, 그 결과가 다소 의외일 수도 있다.
+#+BEGIN_SRC io
+Io> -123 abs
+==> -123
+#+END_SRC
+
+위 코드는 =-(123 abs)= 와 같이 묶여서 그렇다. 아래처럼 하면 된다.
+#+BEGIN_SRC io
+Io> (-123) abs
+==> 123
+#+END_SRC
+
+마지막으로 참과 거짓 값이 있다.
+#+BEGIN_SRC io
+Io> true
+==> true
+Io> false
+==> false
+Io> 1 == 1
+==> true
+Io> 1 == 2
+==> false
+#+END_SRC
+
+부정을 하기 위해 =not= 메서드를 사용할 수 있다.
+#+BEGIN_SRC io
+Io> true not
+==> false
+Io> false not
+==> true
+#+END_SRC
+
+=and= 와 =or= 메서드도 존재한다. 다만 이 메서드들은 앞서 말한 =+= 나
+=..= 같이 =OperatorTable= 에 괄호를 생략할 수 있도록 등록되어 있다. 여러분도 이러한 메서드를 얼마든지 추가할 수 있다.
+#+BEGIN_SRC io
+Io> true and false
+==> false
+Io> true and true
+==> true
+Io> true or false 
+==> true
+Io> false or false
+==> false
+#+END_SRC
+
+
+** 제어 구조
+=if= 문을 찾는 사람들이 벌써 있을 것이다. Io에서는 모든 것을 메서드로 구현해 놓았기 때문에 별도의 =if= 나 =for= 등의 문법이 없다. 다만 같은 이름의 메서드가 있을 뿐이다.
+
+=true= 나 =false= 에는 =then= 이나 =else= 같은 메서드가 있어서 그것들을 사용하면 분기를 구현할 수 있다.
+#+BEGIN_SRC io
+Io> (1 == 2) then("1 equals to 2." println) else("1 does not equal to 2." println)
+1 does not equal to 2.
+==> nil
+#+END_SRC
+
+별도로 =if= 라는 함수 역시 존재한다. 이것을 사용하면 다른 언어의 삼항 연산자처럼 사용할 수 있는데 그것보다 더 읽기도 쉽다.
+#+BEGIN_SRC io
+Io> if(1 == 2, "1 equals to 2.", "1 does not equal to 2.") println
+1 does not equal to 2.
+==> 1 does not equal to 2.
+#+END_SRC
+
+다른 언어에서 볼 수 있는 =foreach= 도 존재한다. 리스트 등의 객체에 정의된 =foreach= 메서드를 쓰면 된다.
+#+BEGIN_SRC io
+ Io> fruits foreach(fruit, fruit println)    
+ apple
+ banana
+ lemon
+ orange
+ strawberry
+ blueberry
+ raspberry
+ ==> raspberry
+#+END_SRC
+
+간단하게 아래처럼 써도 된다.
+#+BEGIN_SRC io
+ Io> fruits foreach(println)
+ apple
+ banana
+ lemon
+ orange
+ strawberry
+ blueberry
+ raspberry
+ ==> raspberry
+#+END_SRC
+
+구구단을 출력하려면 어떻게 해야 할까? =Range= 를 사용하면 된다. 일단 프롬프트에 =Range= 라고 입력하여 =Range= 애드온을 불러와야 한다.
+#+BEGIN_SRC io
+Io> Range
+==>  Range_0x1002c8548:
+  asList           = method(...)
+  at               = method(pos, ...)
+  contains         = method(v, ...)
+  first            = Range_first()
+  foreach          = Range_foreach()
+  index            = Range_index()
+  indexOf          = method(aValue, ...)
+  last             = Range_last()
+  map              = method(...)
+  next             = Range_next()
+  previous         = Range_previous()
+  rewind           = Range_rewind()
+  select           = method(...)
+  setRange         = Range_setRange()
+  slice            = method(s, e, b, ...)
+  value            = Range_value()
+#+END_SRC
+
+출력된 목록이 =Range= 객체에 정의된 메서드들이다. 이 객체에도 =foreach= 가 있으므로 그걸 사용하면 구구단 프로그램을 작성할 수 있다. 숫자 객체에는 =to= 메서드가 있는데 =1 to(10)= 이라고 쓰면 =1= 부터 =10= 까지의 범위를 뜻하는 =Range= 객체가 반환된다.
+#+BEGIN_SRC io
+Io> 1 to(10)
+==>  Range_0x100409600:
+
+Io> 1 to(10) asList
+==> list(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+#+END_SRC
+
+이걸 가지고 구구단을 아래와 같이 짤 수 있다.
+#+BEGIN_SRC io
+Range
+
+2 to(9) foreach(i,
+  1 to(9) foreach(j,
+    (i .. " * " .. j .. " = " .. (i * j)) println
+  )
+)
+#+END_SRC
+
+** 차회 예고: 프로토타입 기반 객체 지향 프로그래밍
+다음 회에서는 Io의 큰 특징 중 하나인 프로토타입 기반 객체 지향 프로그래밍에 대해 자세히 설명하겠다.
