@@ -2,6 +2,11 @@
 
 **라이센스** 모든 글의 저작권은 안윤호(mindengine@freechal.com)님께 있습니다.
 
+**저자소개**
+![안윤호](https://user-images.githubusercontent.com/25581533/73791730-3e360800-47e6-11ea-9de8-6e849f2127ff.png)
+필자는 아마추어 리눅스 커널 해커였으며 최근에 팹(Fab)이라는 책을 번역 출간했다. 컴퓨터의 여러 분야에 관심이 많고 컴퓨터와 문화의 인터페이스에도 관심이 많다.
+
+
 IBM Developer Works의 글이 모두 사라져 올려봅니다.
 
 * [1회(2007년 4월): 리스프가 탄생하기까지](https://github.com/black7375/ReadabilityDocs/blob/master/%ED%95%B4%EC%BB%A4%20%EB%AC%B8%ED%99%94%EC%9D%98%20%EB%BF%8C%EB%A6%AC%EB%A5%BC%20%EC%B0%BE%EC%95%84%EC%84%9C/part1.org)
