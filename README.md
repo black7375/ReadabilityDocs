@@ -31,3 +31,7 @@ Document-specific licenses are grouped for each project.
 * [신기술 밀림 속 생존전략](https://github.com/black7375/ReadabilityDocs/tree/master/%EC%8B%A0%EA%B8%B0%EC%88%A0%20%EB%B0%80%EB%A6%BC%20%EC%86%8D%20%EC%83%9D%EC%A1%B4%EC%A0%84%EB%9E%B5): 스프링(Spring) 컨설턴트로 활동중인 안영회님이 실제 에피소드를 중심으로 "말이 통하는 프로젝트 꾸려가기"에 대해 다룹니다.
 * [해커문화의 뿌리를 찾아서](https://github.com/black7375/ReadabilityDocs/tree/master/%ED%95%B4%EC%BB%A4%20%EB%AC%B8%ED%99%94%EC%9D%98%20%EB%BF%8C%EB%A6%AC%EB%A5%BC%20%EC%B0%BE%EC%95%84%EC%84%9C): 아마추어 커널 해커이자 IT 역사 탐구에 관심이 많은 안윤호님이 6회에 걸쳐, 매월 첫째 주에 이야기 보따리를 풉니다.
 * [컴퓨팅 기술의 원형탐험](https://github.com/black7375/ReadabilityDocs/tree/master/%EC%BB%B4%ED%93%A8%ED%8C%85%20%EA%B8%B0%EC%88%A0%EC%9D%98%20%EC%9B%90%ED%98%95%ED%83%90%ED%97%98): 오늘날의 컴퓨팅 기술은 정교하고 복잡합니다. 그런데 초창기에는 과연 어떤 모습이었을까요? 이번 연재에서는 컴퓨팅 기술의 태고로 거슬러 올라가 그 원시형을 살펴보고 재현해 보려 합니다. 
+
+**Other IBM Developerworks Articles**
+
+* [작고 아름다운 언어 Io](https://github.com/black7375/ReadabilityDocs/tree/master/%EC%9E%91%EA%B3%A0%20%EC%95%84%EB%A6%84%EB%8B%A4%EC%9A%B4%20%EC%96%B8%EC%96%B4%20Io): Io 언어와 아이디어들에 대해서
