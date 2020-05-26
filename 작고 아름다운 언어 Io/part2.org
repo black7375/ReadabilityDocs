@@ -1,0 +1,89 @@
+* 작고 아름다운 언어 Io, Part 2: 프로토타입 기반 객체 지향 프로그래밍 
+2010년 5월 18일
+
+Io에서 새로운 객체를 만들어 쓰려면 =clone= 메서드를 사용해야 한다. 이 메서드는 자바(Java)의 =new= 예약어와 비슷한 역할을 하지만 예약어가 아니라(Io에는 아무런 예약어가 없다) 일반 메서드다.
+#+BEGIN_SRC io
+Io> anObject := Object clone
+==>  Object_0x100261ca8:
+#+END_SRC
+
+그리고 상속을 해야 할 때도 Io에서는 =clone= 메서드를 사용한다(=do= 메서드는 블럭 안에서 객체 스스로를 수정한 다음 스스로를 반환하는 메서드다).
+#+BEGIN_SRC io
+Io> Bicycle := Object clone do(ride := method("ride a bicycle!"))
+==>  Bicycle_0x1003157a8:
+type             = "Bicycle"
+
+Io> MountainBike := Bicycle clone do(ride := method("ride a mountain bike!"))
+==>  MountainBike_0x10041edc0:
+type             = "MountainBike"
+
+Io> RoadBike := Bicycle clone do(ride := method("ride a road bike!"))
+==>  RoadBike_0x1004b1d50:
+type             = "RoadBike"
+
+Io> TandemBike := Bicycle clone do(ride := method("ride a tandem bike!"))
+==>  TandemBike_0x1004b7340:
+type             = "TandemBike"
+#+END_SRC
+
+아니, 어떻게 인스턴스 생성과 클래스 상속을 하나의 기능으로 해결한단 말인가?
+
+우리가 흔히 사용하는 자바, C++, 파이썬(Python), 루비(Ruby) 같은 언어들은 클래스 기반 객체 지향 프로그래밍 언어다. 다형성에 의한 분기가 클래스 단위로 일어나기 때문에 클래스 기반 객체 지향 언어라고 하는 것이다.
+
+프로토타입 기반 객체 지향 프로그래밍은 인스턴스 단위로 다형성에 의한 분기가 일어난다. 정확히 말하자면 프로토타입 기반 프로그래밍에서는 클래스와 인스턴스를 구분하지 않고 객체라는 말을 사용한다. 당연히 클래스 메서드(정적 메서드)와 인스턴스 메서드도 구분하지 않으며, 클래스 상속과 인스턴스 생성 역시 구분하지 않는 것이다.
+
+[[https://user-images.githubusercontent.com/25581533/82859776-27d3c980-9f07-11ea-9329-341d0a7133bf.png]]
+
+잠시 다른 얘기를 하자면 자바스크립트(JavaScript) 역시 프로토타입 객체 지향 언어다. 한때 잘 모르는 사람들이 자바스크립트에는 클래스가 없고 상속이 불가능하므로 객체 지향 언어가 아니라고 했던 적이 있지만, 자바스크립트가 재평가받은 지금 그런 말을 하는 사람은 찾기 어려워졌다. 모두들 자바스크립트에 클래스가 없지만 오히려 클래스 기반 객체 지향 언어보다 더 유연하게 객체를 지원하며 객체 단위의 상속도 가능하다는 것을 알게 되었기 때문이다.
+
+클래스와 인스턴스 구분이 없으므로 자바의 =instanceof= 같은 연산자는 없다. 대신 어떤 객체로부터 복제되었는지는 알 수 있다.
+#+BEGIN_SRC io
+Io> aBike := MountainBike clone
+==>  MountainBike_0x100359ac0:
+
+Io> aBike proto
+==>  MountainBike_0x10041edc0:
+  type             = "MountainBike"
+
+Io> aBike isKindOf(MountainBike)
+==> true
+Io> aBike isKindOf(Bicycle)
+==> true
+Io> aBike isKindOf(Object)
+==> true
+Io> MountainBike isKindOf(Bicycle)
+==> true
+#+END_SRC
+
+그렇다면 객체 단위에 상속이 가능해지면 대체 어떤 좋은 점이 있을까? 디자인이 유연해지므로 여러 가지 좋은 점이 생긴다고 할 수 있지만 그건 너무 추상적인 설명이다. 구체적으로 느낄 수 있는 이점은 객체 단위의 다형성이다. 한번 예를 들어보자. Io에서 피보나치 수열의 n 번째 위치를 구하는 프로그램을 어떻게 작성할 수 있을까? 다른 언어들과 마찬가지로 숫자 하나를 받는 함수를 구현하면 된다.
+#+BEGIN_SRC io
+fibonacci := method(n,
+  if(n < 2, n,
+     fibonacci(n - 1) + fibonacci(n - 2))
+)
+#+END_SRC
+
+숫자에 관한 연산이니까 숫자 타입에 =fibonacci= 메서드를 추가하는 게 더 객체 지향적으로 보일 수도 있겠다.
+#+BEGIN_SRC io
+Number fibonacci := method(
+  if(self < 2, self,
+     (self - 1) fibonacci + (self - 2) fibonacci)
+)
+#+END_SRC
+
+대체 객체 지향적이라는 것은 어떤 뜻일까? 필자는 중복을 피하기 위해 최대한 많은 분기를 다형성으로 돌리는 것을 객체 지향적이라고 말하고 싶다. 그런 관점에서 보면 위 코드는 덜 객체 지향적일지도 모른다. self가 2보다 작은지를 메서드 안쪽에서 확인해서 직접 분기를 해주기 때문이다. 이런 방식에 무감각할 수도 있지만, 그건 대부분의 언어가 객체 단위의 다형성을 제공하지 않기 때문에 객체 지향 프로그래밍에 대한 많은 가이드라인이 그 부분에 대해 언급하지 않기 때문이라고 본다.
+
+결론적으로 말해 Io에서 객체 단위 다형성을 쓰면 다음과 같이 구현할 수 있다.
+#+BEGIN_SRC io
+0 fibonacci := 0
+1 fibonacci := 1
+Number fibonacci := method((self - 1) fibonacci + (self - 2) fibonacci)
+#+END_SRC
+
+피보나치의 정의란 원래 F(n) = F(n - 1) + F(n - 2), 단 F(1) = 1, F(0) = 0인데 그 정의를 가장 잘 드러내는 방식이다. 일반적인 규칙을 =Number= 객체에 대해 정의하고, 0과 1에 대해서만 특수한 규칙을 별도로 정의했다. 이렇게 프로그래밍할 수 있는 것은 숫자 0과 1이 =Number= 객체로부터 상속받은 객체이며, 객체 단위로 다른 메서드를 정의할 수 있기 때문이다. 클래스 단위 다형성의 경우 0과 1, 그리고 나머지 숫자는 모두 동일한 클래스에 대한 인스턴스이기 때문에 서로 다르게 작동하도록 만들 수가 없다.
+
+
+
+*다음 회 예고: Homoiconicity*
+
+다음 회에서는 리스프(Lisp)로부터 물려받은 Io의 특징인 homoiconicity(프로그램이 데이터이자 코드이며 코드이자 데이터인 특성)에 대해 설명할 예정이다.

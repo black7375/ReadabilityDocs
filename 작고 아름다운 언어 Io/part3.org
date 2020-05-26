@@ -1,0 +1,332 @@
+* 작고 아름다운 언어 Io, Part 3: 데이터와 코드가 한 몸 되어
+:PROPERTIES:
+:TOC:      :include descendants
+:END:
+2010년 6월 15일
+
+:CONTENTS:
+- [[#메세지로서의-코드-메세지로서의-객체][메세지로서의 코드, 메세지로서의 객체]]
+- [[#문맥context과-평가evaluation][문맥(context)과 평가(evaluation)]]
+- [[#조건부-평가][조건부 평가]]
+- [[#method-흉내][method 흉내]]
+- [[#클로저closure-구현][클로저(closure) 구현]]
+- [[#로제타석][로제타석]]
+- [[#행위자actor와-퓨쳐future][행위자(actor)와 퓨쳐(future)]]
+:END:
+
+
+프로그래밍 언어에서 homoiconicity란 코드를 데이터로 다루고, 데이터를 코드로 다루는 특성을 말한다. 최근 대부분의 언어에서 람다(lambda), 즉 값으로서의 함수 개념을 지원하지만 homoiconicity와 람다는 다른 개념이다. 보통 homoiconicity를 지원하다면 람다도 지원한다고 볼 수 있다. Homoiconicity를 통해 람다를 구현할 수 있기 때문이다(하지만 그 반대는 아니다). 만약 리스프에 익숙한 사람이라면 이 homoiconicity라는 특성이 어색하지 않을 것이다. homoiconicity라는 특성이 (프로그래밍 언어의 다른 많은 개념이 그렇듯) 리스프에서 나왔기 때문이다. 하지만 이번 회에는 Io에서의 homoiconicity를 다루겠다.
+
+
+** 메세지로서의 코드, 메세지로서의 객체
+(리스프에서 모든 코드가 결국은 폼(form)이듯이) Io의 모든 코드는 결국 메시지(message)다. Io에서는 언어에서 미리 정의해둔 예약어(keyword)가
+없다. 앞서 살펴보았듯이 =if= 역시 API에서 정의한 메서드일 뿐이다. 그래서 *if 메서드* 라고 부르지 *if 문* 이라고는 부르지 않는다. =for= 도 마찬가지고 메서드를 정의하는 =method= 역시 일반 메서드다.
+#+BEGIN_SRC io
+Io> getSlot("if") 
+==> Object_if()
+Io> getSlot("for")
+==> Object_for()
+Io> getSlot("method")
+==> Object_method()
+Io> method2 := getSlot("method")
+==> Object_method()
+Io> add := method2(a, b, a + b)
+==> method(a, b, 
+    a + b
+)
+Io> add(1, 2)
+==> 3
+#+END_SRC
+
+이 모든 것이 메시지를 객체로 다룰 수 있기 때문이다. 아래 예를 보자.
+
+우리는 =a= 나 =b, =c= 같은 이름을 정의한 적이 없다. 그렇다면 응당 이름이 없다는 에러가 떠야 하는 것이 아닌가? 혹시 Io에서는 정의되지 않은 이름은 암시적으로 =nil= 로 여기는 걸까? 그리고 =nil= 에는 =+= 같은 메서드를 호출해도 에러를 내지 않게 디자인된 걸까? 하지만 아래 예를 보면 그렇지 않다는 것을 알 수 있다.
+#+BEGIN_SRC io
+Io> a
+
+  Exception: Object does not respond to 'a'
+  ---------
+  Object a                             Command Line 1
+#+END_SRC
+
+Io는 분명 정의되지 않은 이름을 평가하려 들면 에러를 낸다. 정확히 설명하자면 평가를 할 때만 에러를 낸다. 평가하기 전에는 에러가 나지 않는다. Io의 메서드는 기본적으로 인자로 넘겨지는 코드를 평가하지 않고 받는다. 우리가 명시적으로 평가하지 않는다면 없는 이름을 써도 에러를 내지 않는다. 대신 인자로 넘겨지는 코드들은 =Message= 라는 형태의 객체로 들어온다.
+#+BEGIN_SRC io
+Io> msgtest := method(call)
+==> method(
+    call
+)	
+Io> msgtest(a)
+==>  Call_0x10035ed80:
+#+END_SRC
+
+메서드 안에서 =call= 을 사용하면 *해당 호출* 에 관한 정보를 모두 얻을 수 있다. 런타임에 메서드를 호출한 문맥, 인자 각각에 쓰인 코드(메시지)들 따위의 정보가 들어있는 객체다.
+#+BEGIN_SRC io
+Io> msgtest(a) message
+==> msgtest(a) message
+Io> msgtest(a) message arguments    
+==> list(a)
+Io> msgtest(a) message arguments at(0)
+==> a
+Io> msgtest(a) message arguments at(0) name
+==> a
+Io> msgtest(a, b, c) message arguments size
+==> 3
+#+END_SRC
+
+단, =method= 메서드에서 인자 이름을 직접 지정할 경우, 해당 인자들은 자동으로 평가되어 돌아온다. 이렇게 작동하는 이유는 대부분의 경우 메서드의 인자를 모두 평가해 사용하기 때문이다. 항상 메서드 안쪽에서 평가되지 않은 인자들을 직접 평가하면 너무 귀찮을 것이다.
+
+메시지 객체는 =message= 메서드를 통해서도 생성 가능하다.
+#+BEGIN_SRC io
+Io> message(msgtest(a, b, c))
+==> msgtest(a, b, c)
+#+END_SRC
+
+이렇게 생성된 평가되지 않은 메시지 객체는 원할 때 얼마든지 평가할 수 있다. 평가는 =Message doInContext= 메서드를 사용하면 된다. 인자를 전달하지 않으면 현재 문맥에서 평가한다.
+#+BEGIN_SRC io
+Io> a := 123   
+==> 123
+Io> msg := message(a * a)
+==> a *(a)
+Io> msg doInContext
+==> 15129
+#+END_SRC
+
+
+** 문맥(context)과 평가(evaluation)
+문맥이란 변수들이 저장된 객체를 뜻한다(리스프에 익숙하다면 리스프의 환경(environment)을 생각하면 된다). Io에서는 객체마다 고유의 슬롯(slot) 목록이 존재하는데 속성(attribute)이라고 생각하면 된다.
+#+BEGIN_SRC io
+Io> ctxt := Object clone 
+==>  Object_0x1002ed8a0:
+
+Io> ctxt a := "variable a"
+==> variable a
+Io> ctxt b := "variable b"
+==> variable b
+#+END_SRC
+
+이를테면 위와 같이 정의된 객체 =ctxt= 는 =a= 와 =b= 라는 슬롯을 갖는다. 그러나 앞서 설명한 프로토타입 개념을 생각해보면 Io의 객체는 상속되며, 모든 객체는 결국 맨 끝에서 =Object= 라는 최상위 객체(클래스가 아니다!)를 만나게 된다. 위에서 만든 =ctxt= 라는 객체만 봐도 =Object= 를 복제하고 있으며 =Object= 객체가 갖는 모든 슬롯을 그대로 상속받는다. 따라서 ctxt에는 =a= 와 =b= 외에도 =Object= 에서 정의된 다른 슬롯들도 함께 존재한다.
+
+문맥이란 변수들이 저장된 객체라고 했는데, 그런 종류의 객체가 따로 있지는 않고 문맥으로 사용되는 객체의 슬롯 이름들이 곧 변수명이 된다.
+#+BEGIN_SRC io
+Io> msg := message(a .. b)
+==> a ..(b)
+Io> msg doInContext(ctxt)
+==> variable avariable b
+#+END_SRC
+
+위 코드를 보면 msg 메시지는 a와 b를 연결하는 코드인데, 변수 a와 b는 doInContext 메서드로 넘겨진 ctxt 객체의 a, b 슬롯을 참조하는 것을 알 수 있다. 물론 a와 b가 정의되지 않은 객체를 문맥으로 넘길 경우 변수가 정의되지 않았다고 에러가 난다.
+#+BEGIN_SRC io
+Io> msg doInContext(Object clone)
+
+  Exception: Object does not respond to 'b'
+  ---------
+  Object b                             Command Line 1
+  Number ..                            Command Line 1
+#+END_SRC
+
+
+** 조건부 평가
+이러한 특성을 이용해 =if= 메서드와 같은 행동을 하는 =if2= 메서드를 직접 작성해보자.
+#+BEGIN_SRC io
+if2 := method(args := call message arguments
+              sender := call sender
+              condition := args at(0) doInContext(sender)
+              condition then(idx := 1) else(idx := 2)
+              args at(idx) doInContext(sender))
+#+END_SRC
+
+call sender는 if2 함수를 호출하는 쪽의 문맥 객체를 반환한다. sender를 문맥으로 해서 전달된 인자 메시지들을 평가하면 호출하는 쪽에서 평가된 것과 효과가 같다.
+#+BEGIN_SRC io
+Io> if2(true, result := 1, result := 2)
+==> 1
+Io> result
+==> 1
+Io> if2(false, result := 3, result := 4)
+==> 4
+Io> result
+==> 4
+#+END_SRC
+
+실행해 보면 첫 번째 인자의 참/거짓 유무에 따라 가운데 인자나 마지막 인자 중 하나만 평가하는 것을 알 수 있다.
+
+** method 흉내
+앞서 말했듯 Io의 =method= 는 일반 메서드이지, 예약어가 아니라고 했다. 따라서 우리가 직접 =method= 와 동등한 것을 구현할 수도 있다.
+#+BEGIN_SRC io
+method2 := method(body := call message arguments last
+                  vars := call message arguments slice(0, -1) map(name)
+                  block := Object clone do(
+                    call := method(ctxt := Object clone
+                                   args := call message arguments
+                                   sender := call sender
+                                   self vars foreach(i, var,
+                                     arg := args at(i) doInContext(sender)
+                                     ctxt setSlot(var, arg)
+                                   )
+                                   ctxt setSlot("call", call)
+                                   self body doInContext(ctxt))
+                  )
+                  block body := body
+                  block vars := vars
+                  block)
+
+
+#+END_SRC
+
+코드는 꽤 길지만 설명하면 그리 어렵지 않다. body에는 만들어질 메서드의 몸통이 들어간다. vars에는 인자 이름이 들어간다. 이를테면 method2(a, b, a + b)와 같이 호출할 경우 block body에는 method(a + b)가 들어가고 block vars에는 list("a", "b")가 들어간다. block은 call 메서드를 정의한 객체인데, 실제 메서드 역할을 할 객체다.
+
+=block= 객체의 =call= 메서드를 보면 =ctxt= 라는 이름의 객체로 별도 문맥을 정의한다. 이렇게 해야 메서드 안쪽이 별도의 지역 스코프(local scope)가 된다. 그 뒤에 =ctxt= 객체에 앞서 =block vars= 에 정의된 이름으로 인자들을 순서대로 평가하여 대입하고, =call= 이라는 이름으로 =call= 메시지를 그대로 넣는다. 마지막으로 =block body= 에 정의된 메시지를 =ctxt= 문맥에서 평가한다.
+
+실제로 사용해보면 큰 문제 없이 작동한다.
+#+BEGIN_SRC io
+Io> m := method2(a, b, a + b)
+==>  Object_0x1004451e0:
+  body             = a +(b)
+  call             = method(...)
+  vars             = list(a, b)
+
+Io> m call(1, 2)
+==> 3
+#+END_SRC
+
+
+** 클로저(closure) 구현
+하지만 한 가지 문제가 있는데, 렉시컬 스코프(lexical scope)가 제대로 동작하지 않는다. 쉽게 말해 메서드가 정의된 문맥의 변수들을 사용할 수 있어야 하는데 그렇지 못하다.
+#+BEGIN_SRC io
+Io> lexicalScopeTest := 123
+==> 123
+Io> m := method2(lexicalScopeText)
+==>  Object_0x1004facc0:
+  body             = lexicalScopeText
+  call             = method(...)
+  vars             = list()
+
+Io> m call
+
+  Exception: Object does not respond to 'lexicalScopeText'
+  ---------
+  Object lexicalScopeText              Command Line 1
+  Object call                          Command Line 1
+#+END_SRC
+
+정의한 시점의 문맥 객체를 호출할 때도 사용하면 되지 않을까? 기존 코드의 ~ctxt := Object clone~ 부분을 고쳐보았다.
+#+BEGIN_SRC io
+method2 := method(body := call message arguments last
+                  vars := call message arguments slice(0, -1) map(name)
+                  defineScope := call sender
+                  block := Object clone do(
+                    call := method(ctxt := self defineScope
+                                   args := call message arguments
+                                   sender := call sender
+                                   self vars foreach(i, var,
+                                     arg := args at(i) doInContext(sender)
+                                     ctxt setSlot(var, arg)
+                                   )
+                                   ctxt setSlot("call", call)
+                                   self body doInContext(ctxt))
+                  )
+                  block body := body
+                  block vars := vars
+                  block defineScope := defineScope
+                  block)
+#+END_SRC
+
+테스트해보면 잘 작동하는 것 같다.
+#+BEGIN_SRC io
+method2 := method(body := call message arguments last
+                  vars := call message arguments slice(0, -1) map(name)
+                  defineScope := call sender
+                  block := Object clone do(
+                    call := method(ctxt := self defineScope
+                                   args := call message arguments
+                                   sender := call sender
+                                   self vars foreach(i, var,
+                                     arg := args at(i) doInContext(sender)
+                                     ctxt setSlot(var, arg)
+                                   )
+                                   ctxt setSlot("call", call)
+                                   self body doInContext(ctxt))
+                  )
+                  block body := body
+                  block vars := vars
+                  block defineScope := defineScope
+                  block)
+#+END_SRC
+
+테스트해보면 잘 작동하는 것 같다.
+#+BEGIN_SRC io
+Io> lexicalScopeTest := 123
+==> 123
+Io> m := method2(lexicalScopeTest)
+==>  Object_0x1004d0640:
+  body             = lexicalScopeTest
+  call             = method(...)
+  defineScope      = Object_0x100218830
+  vars             = list()
+
+Io> m call
+==> 123
+#+END_SRC
+
+하지만 이 구현에도 문제가 있다. 바깥쪽 변수를 사용할 수 있는 대신 지역성을 깨뜨린다. 즉, 지역 변수로 정의되어야 할 것들이 바깥쪽 문맥에 정의된다.
+#+BEGIN_SRC io
+Io> m2 := method2(localVariable := 123)
+==>  Object_0x1004ab110:
+  body             = setSlot("localVariable", 123)
+  call             = method(...)
+  defineScope      = Object_0x100218830
+  vars             = list()
+
+Io> m2 call
+==> 123
+Io> localVariable
+==> 123
+#+END_SRC
+
+이 문제를 해결하려면 =defineScope= 를 그대로 사용하면 안 된다. 대신 호출할 때마다 그것을 복제한 새로운 객체를 문맥으로 사용해야 한다. 그러면 복제된 객체는 =defineScope= 의 슬롯을 모두 읽을 수 있지만, 복제된 객체에 정의한 슬롯은 =defineScope= 에 영향을 미치지 않는다. 앞서 구현한 코드에서 ~ctxt := self defineScope~ 부분을 ~ctxt := self defineScope clone~ 으로 수정하면 우리가 원하는 대로 작동한다.
+#+BEGIN_SRC io
+method2 := method(body := call message arguments last
+                  vars := call message arguments slice(0, -1) map(name)
+                  defineScope := call sender
+                  block := Object clone do(
+                    call := method(ctxt := self defineScope clone
+                                   args := call message arguments
+                                   sender := call sender
+                                   self vars foreach(i, var,
+                                     arg := args at(i) doInContext(sender)
+                                     ctxt setSlot(var, arg)
+                                   )
+                                   ctxt setSlot("call", call)
+                                   self body doInContext(ctxt))
+                  )
+                  block body := body
+                  block vars := vars
+                  block defineScope := defineScope
+                  block)
+#+END_SRC
+
+테스트해보면 이번에야말로 정말 잘 작동하는 것을 볼 수 있다.
+#+BEGIN_SRC io
+Io> m3 := method2(localVariable := "yep")
+==>  Object_0x1004cd690:
+  body             = setSlot("localVariable", "yep")
+  call             = method(...)
+  defineScope      = Object_0x100218830
+  vars             = list()
+
+Io> m3 call
+==> yep
+Io> localVariable
+
+  Exception: Object does not respond to 'localVariable'
+  ---------
+  Object localVariable                 Command Line 1
+#+END_SRC
+
+=block call= 메서드 안쪽에서 매번 ~ctxt := self defineScope clone~ 하는 대신 그 바깥쪽에서 미리 ~block defineScope := defineScope clone~ 해서 쓰면 어떤 효과가 나타날까? 마찬가지로 안쪽에서 정의된 지역 변수가 바깥쪽 문맥에 정의되는 일은 없겠지만, 한번 정의된 지역 변수는 다음에 호출할 때도 사라지지 않고 남아있을 것이다. 즉, C/C++ 언어의 =static= 키워드와 비슷한 동작을 하게 되는 것이다.
+
+** 로제타석
+마지막으로 리스프와 Io에서의 homoiconicity 비교 로제타석을 첨부한다. 리스프를 이미 아는 사람에게는 이해에 도움이 될 것이다.
+[[https://user-images.githubusercontent.com/25581533/82866105-c9fbad80-9f17-11ea-9285-90e0e389c2d9.png]]
+
+** 행위자(actor)와 퓨쳐(future)
+다음 회에서는 행위자 모델(actor model)을 통한 Io에서의 동시성 프로그래밍(concurrent programming)에 대해 다루겠다.
