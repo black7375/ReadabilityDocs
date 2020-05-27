@@ -3,7 +3,9 @@
 **라이센스** 모든 글의 저작권은 박영록(pak.youngrok@gmail.com)님께 있습니다.
 
 **저자소개**
+
 ![박영록](https://user-images.githubusercontent.com/25581533/73792875-91a95580-47e8-11ea-8ef7-eb6ab33d4ecb.png)
+
 엔씨소프트 오픈마루 스튜디오 웹서비스 개발팀에서 일하고 있다.
 
 IBM Developer Works의 글이 모두 사라져 올려봅니다.
